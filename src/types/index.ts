@@ -1,54 +1,46 @@
-
 export interface User {
-  userId: string;
-  name: string;
+  uid: string;
   email: string;
-  role: 'user' | 'owner';
-  city: string;
+  displayName?: string;
+  role?: 'customer' | 'owner';
 }
 
 export interface Business {
-  id?: string;
-  businessId?: string;
+  id: string;
   name: string;
   description: string;
-  phone: string;
   address: string;
-  website?: string;
-  whatsappLink?: string;
-  category: string;
-  location: string;
+  city: string;
+  phone?: string;
+  email?: string;
+  whatsappNumber?: string;
+  imageUrl?: string;
   ownerId: string;
-  ownerName?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
 }
 
 export interface Offer {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
-  businessId: string;
-  businessName: string;
-  location: string;
-  category: string;
   originalPrice: number;
   discountedPrice: number;
-  discount: number;
+  discount?: number;
   validUntil: string;
-  expiryDate: string;
+  category: string;
+  location: string;
+  imageUrl?: string;
+  whatsappNumber?: string;
+  businessId: string;
   createdAt: string;
-  updatedAt: string;
-  ownerId: string;
+  expiryDate?: string;
 }
 
 export interface City {
   id: string;
   name: string;
   state: string;
-  isCustom: boolean;
-  createdBy?: string;
+  isCustom?: boolean;
 }
 
 export const CATEGORIES = [
