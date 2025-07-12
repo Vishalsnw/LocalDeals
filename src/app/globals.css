@@ -141,15 +141,14 @@
   }
 
   /* Bottom navigation styles */
-  body {
-    padding-bottom: 80px;
-  }
+body {
+  padding-bottom: 80px;
+}
 
-  .bottom-nav-item {
-    transition: all 0.3s ease;
-  }
+.bottom-nav-item {
+  transition: all 0.3s ease;
+}
 
-  .bottom-nav-item:hover {
-    transform: translateY(-2px);
-  }
+.bottom-nav-item:hover {
+  transform: translateY(-2px);
 }
