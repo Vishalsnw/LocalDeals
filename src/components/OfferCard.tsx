@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -30,7 +29,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
               />
             </div>
           )}
-          
+
           {discount > 0 && (
             <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-bold">
               {discount}% OFF
@@ -42,7 +41,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
           <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
             {offer.title}
           </h3>
-          
+
           <p className="text-gray-600 text-sm line-clamp-2">
             {offer.description}
           </p>

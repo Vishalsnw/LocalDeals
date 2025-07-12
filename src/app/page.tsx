@@ -54,18 +54,18 @@ export default function Home() {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      
+
       // Build the query conditions array
       const conditions = [];
-      
+
       if (selectedCity) {
         conditions.push(where('location', '==', selectedCity));
       }
-      
+
       if (selectedCategory) {
         conditions.push(where('category', '==', selectedCategory));
       }
-      
+
       // Create the query with all conditions
       let q;
       if (conditions.length > 0) {

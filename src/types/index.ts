@@ -19,12 +19,12 @@ export interface Business {
 
 export interface Offer {
   id: string;
-  offerId: string;
   title: string;
   description: string;
   imageUrl: string;
   businessId: string;
-  city: string;
+  businessName: string;
+  location: string;
   category: string;
   originalPrice: number;
   discountedPrice: number;
@@ -32,6 +32,8 @@ export interface Offer {
   validUntil: string;
   expiryDate: string;
   createdAt: string;
+  updatedAt: string;
+  ownerId: string;
 }
 
 export interface City {

@@ -89,7 +89,7 @@ export default function OfferDetails() {
                 <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
                   {offer.category}
                 </span>
-                <span>📍 {offer.city}</span>
+                <span>📍 {offer.location}</span>
                 <span>
                   {isExpired ? '❌ Expired' : expiryDate ? `⏰ Expires ${new Date(expiryDate).toLocaleDateString()}` : '⏰ No expiry'}
                 </span>
