@@ -6,108 +6,82 @@ import { Offer } from '@/types';
 
 interface OfferCardProps {
   offer: Offer;
-  index?: number;
 }
 
-export default function OfferCard({ offer, index = 0 }: OfferCardProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+export default function OfferCard({ offer }: OfferCardProps) {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
   };
 
-  const isExpiringSoon = () => {
-    const expiryDate = new Date(offer.expiryDate);
-    const today = new Date();
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 3 && diffDays > 0;
-  };
-
-  const isExpired = () => {
-    const expiryDate = new Date(offer.expiryDate);
-    const today = new Date();
-    return expiryDate < today;
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div
-      className="group"
-    >
-      <Link href={`/offer/${offer.offerId}`}>
-        <div className="floating-card card-hover relative overflow-hidden">
-          {/* Status badges */}
-          <div className="absolute top-4 left-4 z-10 flex flex-col space-y-2">
-            {isExpired() && (
-              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                Expired
-              </span>
-            )}
-            {isExpiringSoon() && !isExpired() && (
-              <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">
-                Expires Soon
-              </span>
-            )}
+    <div className="card hover:shadow-lg transition-all duration-300 animate-fadeIn">
+      <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+        {offer.imageUrl ? (
+          <Image
+            src={offer.imageUrl}
+            alt={offer.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <span className="text-6xl">🏪</span>
           </div>
-
-          {/* Image container */}
-          <div className="relative h-48 w-full overflow-hidden">
-            <Image
-              src={offer.imageUrl || '/placeholder-offer.jpg'}
-              alt={offer.title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-
-          {/* Content */}
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                {offer.title}
-              </h3>
-              <div className="category-badge ml-2 flex-shrink-0">
-                {/* <FiTag className="w-3 h-3 mr-1" /> */}
-                🏷️
-                {offer.category}
-              </div>
-            </div>
-
-            <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
-              {offer.description}
-            </p>
-
-            {/* Footer info */}
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-                <div className="flex items-center space-x-1">
-                    <span className="text-blue-600">📅</span>
-                    <span>Expires: {new Date(offer.expiryDate).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                    <span className="text-blue-600">📍</span>
-                    <span>{offer.city}</span>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center space-x-1">
-                    <span className="text-purple-600">🏷️</span>
-                    <span className="text-sm font-medium text-purple-600">{offer.category}</span>
-                </div>
-                <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <span>🕒</span>
-                    <span>{offer.timeLeft}</span>
-                </div>
-            </div>
-          </div>
-
-          {/* Hover effect overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        )}
+        <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-bold">
+          {offer.discount}% OFF
         </div>
-      </Link>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">{offer.title}</h3>
+          <p className="text-gray-600 text-sm line-clamp-2">{offer.description}</p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>🏢</span>
+            <span className="font-medium">{offer.businessName}</span>
+          </div>
+
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>📍</span>
+            <span>{offer.location}</span>
+          </div>
+
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>📅</span>
+            <span>Valid until {formatDate(offer.validUntil)}</span>
+          </div>
+
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>⏰</span>
+            <span>Posted at {formatTime(offer.createdAt)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-3 border-t">
+          <div className="flex items-center space-x-1">
+            <span>🏷️</span>
+            <span className="text-sm font-medium text-blue-600">{offer.category}</span>
+          </div>
+
+          <Link 
+            href={`/offer/${offer.id}`}
+            className="btn-primary text-sm py-2 px-4"
+          >
+            View Details
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

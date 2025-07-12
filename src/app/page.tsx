@@ -1,36 +1,46 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Offer, CATEGORIES, INDIAN_CITIES, City } from '@/types';
+import { Offer } from '@/types';
+import BottomNav from '@/components/BottomNav';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
-import BottomNav from '@/components/BottomNav';
 
 export default function Home() {
   const { user } = useAuth();
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
   const [showAddCity, setShowAddCity] = useState(false);
   const [newCityName, setNewCityName] = useState('');
   const [newCityState, setNewCityState] = useState('');
-  const [availableCities, setAvailableCities] = useState<City[]>([]);
+  const [availableCities, setAvailableCities] = useState([
+    { id: '1', name: 'Mumbai', state: 'Maharashtra', isCustom: false },
+    { id: '2', name: 'Delhi', state: 'Delhi', isCustom: false },
+    { id: '3', name: 'Bangalore', state: 'Karnataka', isCustom: false },
+    { id: '4', name: 'Hyderabad', state: 'Telangana', isCustom: false },
+    { id: '5', name: 'Chennai', state: 'Tamil Nadu', isCustom: false },
+    { id: '6', name: 'Kolkata', state: 'West Bengal', isCustom: false },
+  ]);
 
-  useEffect(() => {
-    // Initialize with Indian cities
-    const initialCities: City[] = INDIAN_CITIES.map((city, index) => ({
-      id: `indian-${index}`,
-      name: city.name,
-      state: city.state,
-      isCustom: false
-    }));
-    setAvailableCities(initialCities);
-  }, []);
+  const categories = [
+    'Food & Dining',
+    'Shopping',
+    'Entertainment',
+    'Health & Beauty',
+    'Services',
+    'Travel',
+    'Electronics',
+    'Fashion',
+    'Home & Garden',
+    'Sports & Fitness'
+  ];
 
   useEffect(() => {
     if (user?.city) {
@@ -43,19 +53,33 @@ export default function Home() {
   }, [selectedCity, selectedCategory]);
 
   const fetchOffers = async () => {
-    if (!selectedCity) return;
-
     try {
+      setLoading(true);
       let q = query(
         collection(db, 'offers'),
-        where('city', '==', selectedCity),
         orderBy('createdAt', 'desc')
       );
+
+      if (selectedCity) {
+        q = query(
+          collection(db, 'offers'),
+          where('location', '==', selectedCity),
+          orderBy('createdAt', 'desc')
+        );
+      }
 
       if (selectedCategory) {
         q = query(
           collection(db, 'offers'),
-          where('city', '==', selectedCity),
+          where('category', '==', selectedCategory),
+          orderBy('createdAt', 'desc')
+        );
+      }
+
+      if (selectedCity && selectedCategory) {
+        q = query(
+          collection(db, 'offers'),
+          where('location', '==', selectedCity),
           where('category', '==', selectedCategory),
           orderBy('createdAt', 'desc')
         );
@@ -63,9 +87,9 @@ export default function Home() {
 
       const querySnapshot = await getDocs(q);
       const offersData = querySnapshot.docs.map(doc => ({
-        offerId: doc.id,
+        id: doc.id,
         ...doc.data()
-      } as Offer));
+      })) as Offer[];
 
       setOffers(offersData);
     } catch (error) {
@@ -75,115 +99,112 @@ export default function Home() {
     }
   };
 
-  const addCustomCity = async () => {
-    if (!newCityName.trim() || !newCityState.trim()) return;
-
-    try {
-      const newCity: City = {
-        id: `custom-${Date.now()}`,
+  const addCustomCity = () => {
+    if (newCityName.trim() && newCityState.trim()) {
+      const newCity = {
+        id: Date.now().toString(),
         name: newCityName.trim(),
         state: newCityState.trim(),
-        isCustom: true,
-        createdBy: user?.userId
+        isCustom: true
       };
-
-      // Add to Firestore
-      await addDoc(collection(db, 'cities'), newCity);
-
-      // Add to local state
-      setAvailableCities(prev => [...prev, newCity]);
+      setAvailableCities([...availableCities, newCity]);
       setSelectedCity(newCity.name);
-      setShowAddCity(false);
       setNewCityName('');
       setNewCityState('');
-    } catch (error) {
-      console.error('Error adding custom city:', error);
+      setShowAddCity(false);
     }
   };
 
   const filteredOffers = offers.filter(offer =>
     offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.description.toLowerCase().includes(searchTerm.toLowerCase())
+    offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    offer.businessName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const stats = [
-    { icon: '📈', label: 'Active Deals', value: filteredOffers.length, color: 'text-blue-600' },
-    { icon: '🏢', label: 'Local Businesses', value: new Set(offers.map(o => o.businessId)).size, color: 'text-green-600' },
-    { icon: '⭐', label: 'Categories', value: new Set(offers.map(o => o.category)).size, color: 'text-purple-600' },
-  ];
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Discover Amazing
-              <span className="block gradient-text">Local Deals</span>
-            </h1>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
-              Find the best offers from local businesses in your city. Save money while supporting your community.
-            </p>
-          </div>
+      
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Hero Section */}
+        <div className="text-center mb-8 animate-fadeIn">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Discover Amazing Local Deals
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Find the best offers from businesses in your city
+          </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 px-4">
-            {stats.map((stat, index) => (
-              <div
-                key={stat.label}
-                className="floating-card p-4 text-center"
-              >
-                <div className="text-2xl mb-2">{stat.icon}</div>
-                <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
-              </div>
-            ))}
+          <div className="flex justify-center space-x-8 mb-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{offers.length}</div>
+              <div className="text-sm text-gray-600">Active Deals</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">50+</div>
+              <div className="text-sm text-gray-600">Local Businesses</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">1000+</div>
+              <div className="text-sm text-gray-600">Happy Customers</div>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Filters Section */}
-      <section className="py-8 bg-white/10 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className="grid grid-cols-1 lg:grid-cols-4 gap-6"
-          >
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 animate-slideInLeft">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            
             {/* Search */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2">
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
                 <input
                   type="text"
-                  placeholder="Search deals..."
+                  placeholder="Search deals, businesses, or categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-12"
+                  className="input-field pl-10"
                 />
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div className="lg:col-span-1">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🏷️</span>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="select-field pl-10"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
             {/* City Selection */}
             <div className="lg:col-span-1">
               <div className="flex space-x-2">
-                <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📍</span>
-                <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="select-field flex-1"
-                >
-                  <option value="">Choose a city</option>
-                  {availableCities.map(city => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}, {city.state} {city.isCustom && '(Custom)'}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📍</span>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    className="select-field pl-10"
+                  >
+                    <option value="">All Cities</option>
+                    {availableCities.map(city => (
+                      <option key={city.id} value={city.name}>
+                        {city.name}, {city.state} {city.isCustom && '(Custom)'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   onClick={() => setShowAddCity(true)}
                   className="btn-secondary px-3"
@@ -193,83 +214,76 @@ export default function Home() {
                 </button>
               </div>
             </div>
-
-            {/* Category Filter */}
-            <div className="lg:col-span-1">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔽</span>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Categories</option>
-                  {CATEGORIES.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Filter Button */}
-            <div className="lg:col-span-1">
-              <button
-                className="btn-primary w-full flex items-center justify-center space-x-2"
-              >
-                <span>Apply Filters</span>
-              </button>
-            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="card animate-pulse">
-                  <div className="h-48 bg-gray-200 rounded-lg mb-4 shimmer"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2 shimmer"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4 shimmer"></div>
-                </div>
-              ))}
-            </div>
-          ) : filteredOffers.length === 0 ? (
-            <div
-              className="text-center py-20"
-            >
-              <h3 className="text-2xl font-semibold text-white mb-2">No deals found</h3>
-              <p className="text-white/70 max-w-md mx-auto">
-                {selectedCity ? 'No deals available in this city yet. Check back soon!' : 'Please select a city to view deals.'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredOffers.map((offer, index) => (
-                <OfferCard key={offer.offerId} offer={offer} index={index} />
-              ))}
+          {/* Active Filters */}
+          {(selectedCategory || selectedCity) && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {selectedCategory && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                  🏷️ {selectedCategory}
+                  <button 
+                    onClick={() => setSelectedCategory('')}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedCity && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                  📍 {selectedCity}
+                  <button 
+                    onClick={() => setSelectedCity('')}
+                    className="ml-2 text-green-600 hover:text-green-800"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
             </div>
           )}
         </div>
-      </section>
 
-      {/* Add City Modal */}
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-2 text-gray-600">Loading amazing deals...</p>
+          </div>
+        )}
+
+        {/* Offers Grid */}
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slideInRight">
+            {filteredOffers.length > 0 ? (
+              filteredOffers.map((offer) => (
+                <OfferCard key={offer.id} offer={offer} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No deals found</h3>
+                <p className="text-gray-600">
+                  {searchTerm || selectedCategory || selectedCity
+                    ? 'Try adjusting your search criteria'
+                    : 'Check back later for new deals!'}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Add Custom City Modal */}
       {showAddCity && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        >
-          <div
-            className="floating-card max-w-md w-full p-6"
-          >
-            <h3 className="text-xl font-bold mb-4">Add Custom City</h3>
-
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Add Custom City</h3>
+            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City Name</label>
                 <input
                   type="text"
                   value={newCityName}
@@ -278,11 +292,9 @@ export default function Home() {
                   placeholder="Enter city name"
                 />
               </div>
-
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  State
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                 <input
                   type="text"
                   value={newCityState}

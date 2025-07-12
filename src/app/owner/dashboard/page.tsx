@@ -1,63 +1,89 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { useAuth } from '@/contexts/AuthContext';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
-import { Business, Offer, CATEGORIES } from '@/types';
-import Navbar from '@/components/Navbar';
+import { Business, Offer } from '@/types';
 import BottomNav from '@/components/BottomNav';
+import Navbar from '@/components/Navbar';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
   const [business, setBusiness] = useState<Business | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [showBusinessForm, setShowBusinessForm] = useState(false);
   const [showOfferForm, setShowOfferForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
-  // Business form state
   const [businessForm, setBusinessForm] = useState({
     name: '',
+    description: '',
     phone: '',
+    address: '',
     website: '',
-    whatsappNumber: '',
+    whatsappLink: '',
+    category: ''
   });
 
-  // Offer form state
   const [offerForm, setOfferForm] = useState({
     title: '',
     description: '',
+    originalPrice: 0,
+    discountedPrice: 0,
+    validUntil: '',
     category: '',
-    expiryDate: '',
-    image: null as File | null,
+    imageFile: null as File | null
   });
 
+  const categories = [
+    'Food & Dining',
+    'Shopping',
+    'Entertainment',
+    'Health & Beauty',
+    'Services',
+    'Travel',
+    'Electronics',
+    'Fashion',
+    'Home & Garden',
+    'Sports & Fitness'
+  ];
+
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
+    if (user) {
+      fetchBusinessAndOffers();
     }
+  }, [user]);
 
-    if (user.role !== 'owner') {
-      router.push('/');
-      return;
-    }
-
-    fetchBusinessData();
-  }, [user, router]);
-
-  const fetchBusinessData = async () => {
+  const fetchBusinessAndOffers = async () => {
     if (!user) return;
 
     try {
+      setLoading(true);
+      
       // Fetch business
-      const businessDoc = await getDoc(doc(db, 'businesses', user.userId));
-      if (businessDoc.exists()) {
-        setBusiness(businessDoc.data() as Business);
+      const businessQuery = query(
+        collection(db, 'businesses'),
+        where('ownerId', '==', user.userId)
+      );
+      const businessSnapshot = await getDocs(businessQuery);
+      
+      if (!businessSnapshot.empty) {
+        const businessData = businessSnapshot.docs[0].data() as Business;
+        setBusiness({ ...businessData, id: businessSnapshot.docs[0].id });
+        setBusinessForm({
+          name: businessData.name || '',
+          description: businessData.description || '',
+          phone: businessData.phone || '',
+          address: businessData.address || '',
+          website: businessData.website || '',
+          whatsappLink: businessData.whatsappLink || '',
+          category: businessData.category || ''
+        });
       } else {
         setShowBusinessForm(true);
       }
@@ -65,16 +91,17 @@ export default function OwnerDashboard() {
       // Fetch offers
       const offersQuery = query(
         collection(db, 'offers'),
-        where('businessId', '==', user.userId)
+        where('ownerId', '==', user.userId)
       );
       const offersSnapshot = await getDocs(offersQuery);
       const offersData = offersSnapshot.docs.map(doc => ({
-        offerId: doc.id,
+        id: doc.id,
         ...doc.data()
-      } as Offer));
+      })) as Offer[];
+      
       setOffers(offersData);
     } catch (error) {
-      console.error('Error fetching business data:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -82,41 +109,37 @@ export default function OwnerDashboard() {
 
   const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user) return;
 
-    // Validate required fields
-    if (!businessForm.name.trim()) {
-      alert('Business name is required');
-      return;
-    }
-    if (!businessForm.phone.trim()) {
-      alert('Phone number is required');
-      return;
-    }
-
     try {
-      const whatsappLink = businessForm.whatsappNumber 
-        ? `https://wa.me/${businessForm.whatsappNumber.replace(/\D/g, '')}?text=Hi%2C%20I%20saw%20your%20deal%20on%20LocalDeal`
-        : '';
-
+      setUploading(true);
+      
       const businessData = {
-        businessId: user.userId,
-        name: businessForm.name.trim(),
-        city: user.city,
-        phone: businessForm.phone.trim(),
-        website: businessForm.website.trim() || '',
-        whatsappLink: whatsappLink || '',
+        ...businessForm,
         ownerId: user.userId,
+        ownerName: user.name,
+        location: user.city,
+        updatedAt: new Date().toISOString()
       };
 
-      await setDoc(doc(db, 'businesses', user.userId), businessData);
-      setBusiness(businessData as Business);
+      if (business?.id) {
+        await updateDoc(doc(db, 'businesses', business.id), businessData);
+        setBusiness({ ...businessData, id: business.id });
+      } else {
+        const docRef = await addDoc(collection(db, 'businesses'), {
+          ...businessData,
+          createdAt: new Date().toISOString()
+        });
+        setBusiness({ ...businessData, id: docRef.id });
+      }
+
       setShowBusinessForm(false);
       alert('Business details saved successfully!');
     } catch (error) {
       console.error('Error saving business:', error);
-      alert('Error saving business. Please try again.');
+      alert('Error saving business details. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -125,131 +148,215 @@ export default function OwnerDashboard() {
     if (!user || !business) return;
 
     try {
+      setUploading(true);
+      
       let imageUrl = '';
-
-      if (offerForm.image) {
-        const imageRef = ref(storage, `offers/${Date.now()}_${offerForm.image.name}`);
-        await uploadBytes(imageRef, offerForm.image);
-        imageUrl = await getDownloadURL(imageRef);
+      if (offerForm.imageFile) {
+        const imageRef = ref(storage, `offers/${Date.now()}_${offerForm.imageFile.name}`);
+        const snapshot = await uploadBytes(imageRef, offerForm.imageFile);
+        imageUrl = await getDownloadURL(snapshot.ref);
       }
+
+      const discount = Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100);
 
       const offerData = {
         title: offerForm.title,
         description: offerForm.description,
-        imageUrl,
-        businessId: user.userId,
-        city: user.city,
+        originalPrice: offerForm.originalPrice,
+        discountedPrice: offerForm.discountedPrice,
+        discount,
+        validUntil: offerForm.validUntil,
         category: offerForm.category,
-        expiryDate: offerForm.expiryDate,
-        createdAt: new Date().toISOString(),
+        imageUrl,
+        ownerId: user.userId,
+        businessId: business.id,
+        businessName: business.name,
+        location: user.city,
+        updatedAt: new Date().toISOString()
       };
 
-      await addDoc(collection(db, 'offers'), offerData);
-      setShowOfferForm(false);
+      if (editingOffer?.id) {
+        await updateDoc(doc(db, 'offers', editingOffer.id), offerData);
+      } else {
+        await addDoc(collection(db, 'offers'), {
+          ...offerData,
+          createdAt: new Date().toISOString()
+        });
+      }
+
       setOfferForm({
         title: '',
         description: '',
+        originalPrice: 0,
+        discountedPrice: 0,
+        validUntil: '',
         category: '',
-        expiryDate: '',
-        image: null,
+        imageFile: null
       });
-      fetchBusinessData();
+      setEditingOffer(null);
+      setShowOfferForm(false);
+      fetchBusinessAndOffers();
+      alert(editingOffer ? 'Offer updated successfully!' : 'Offer created successfully!');
     } catch (error) {
-      console.error('Error creating offer:', error);
+      console.error('Error saving offer:', error);
+      alert('Error saving offer. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleDeleteOffer = async (offerId: string) => {
-    if (confirm('Are you sure you want to delete this offer?')) {
-      try {
-        await deleteDoc(doc(db, 'offers', offerId));
-        fetchBusinessData();
-      } catch (error) {
-        console.error('Error deleting offer:', error);
-      }
+    if (!confirm('Are you sure you want to delete this offer?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'offers', offerId));
+      fetchBusinessAndOffers();
+      alert('Offer deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting offer:', error);
+      alert('Error deleting offer. Please try again.');
     }
   };
 
+  if (!user || user.role !== 'owner') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You need to be a business owner to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <main className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Business Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Dashboard</h1>
+          <p className="text-gray-600">Manage your business and offers</p>
+        </div>
 
-          {!business || showBusinessForm ? (
+        {/* Business Details Section */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Business Details</h2>
+            {business && !showBusinessForm && (
+              <button
+                onClick={() => setShowBusinessForm(true)}
+                className="btn-secondary"
+              >
+                Edit Business
+              </button>
+            )}
+          </div>
+
+          {showBusinessForm ? (
             <div className="card max-w-2xl">
-              <h2 className="text-xl font-semibold mb-4">
-                {business ? 'Edit Business Profile' : 'Set Up Your Business Profile'}
-              </h2>
-
               <form onSubmit={handleBusinessSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Business Name *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
                   <input
                     type="text"
                     required
                     value={businessForm.name}
                     onChange={(e) => setBusinessForm({...businessForm, name: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="input-field"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
                     required
-                    value={businessForm.phone}
-                    onChange={(e) => setBusinessForm({...businessForm, phone: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={businessForm.description}
+                    onChange={(e) => setBusinessForm({...businessForm, description: e.target.value})}
+                    className="input-field"
+                    rows={3}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website (optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={businessForm.website}
-                    onChange={(e) => setBusinessForm({...businessForm, website: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      required
+                      value={businessForm.phone}
+                      onChange={(e) => setBusinessForm({...businessForm, phone: e.target.value})}
+                      className="input-field"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select
+                      required
+                      value={businessForm.category}
+                      onChange={(e) => setBusinessForm({...businessForm, category: e.target.value})}
+                      className="select-field"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    WhatsApp Number (optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={businessForm.whatsappNumber}
-                    onChange={(e) => setBusinessForm({...businessForm, whatsappNumber: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., +1234567890"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <textarea
+                    required
+                    value={businessForm.address}
+                    onChange={(e) => setBusinessForm({...businessForm, address: e.target.value})}
+                    className="input-field"
+                    rows={2}
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website (Optional)</label>
+                    <input
+                      type="url"
+                      value={businessForm.website}
+                      onChange={(e) => setBusinessForm({...businessForm, website: e.target.value})}
+                      className="input-field"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Link (Optional)</label>
+                    <input
+                      type="url"
+                      value={businessForm.whatsappLink}
+                      onChange={(e) => setBusinessForm({...businessForm, whatsappLink: e.target.value})}
+                      className="input-field"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <button type="submit" className="btn-primary">
-                    {business ? 'Update Business' : 'Save Business'}
+                  <button 
+                    type="submit" 
+                    disabled={uploading}
+                    className="btn-primary disabled:opacity-50"
+                  >
+                    {uploading ? 'Saving...' : business ? 'Update Business' : 'Save Business'}
                   </button>
                   {business && (
                     <button
@@ -263,122 +370,175 @@ export default function OwnerDashboard() {
                 </div>
               </form>
             </div>
-          ) : (
+          ) : business ? (
             <div className="card max-w-2xl">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-xl font-semibold">{business.name}</h2>
-                  <p className="text-gray-600">📞 {business.phone}</p>
-                  {business.website && (
-                    <p className="text-gray-600">🌐 {business.website}</p>
-                  )}
-                  {business.whatsappLink && (
-                    <p className="text-gray-600">💬 WhatsApp enabled</p>
-                  )}
+                  <p className="text-gray-600 mt-1">{business.description}</p>
+                  <div className="mt-3 space-y-1">
+                    <p className="text-gray-600">📞 {business.phone}</p>
+                    <p className="text-gray-600">📍 {business.address}</p>
+                    <p className="text-gray-600">🏷️ {business.category}</p>
+                    {business.website && (
+                      <p className="text-gray-600">🌐 <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{business.website}</a></p>
+                    )}
+                    {business.whatsappLink && (
+                      <p className="text-gray-600">💬 <a href={business.whatsappLink} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">WhatsApp</a></p>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() => setShowBusinessForm(true)}
-                  className="btn-secondary"
-                >
-                  Edit
-                </button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
+        {/* Offers Section */}
         {business && (
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Your Offers</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Your Offers</h2>
               <button
-                onClick={() => setShowOfferForm(true)}
+                onClick={() => {
+                  setEditingOffer(null);
+                  setOfferForm({
+                    title: '',
+                    description: '',
+                    originalPrice: 0,
+                    discountedPrice: 0,
+                    validUntil: '',
+                    category: '',
+                    imageFile: null
+                  });
+                  setShowOfferForm(true);
+                }}
                 className="btn-primary"
               >
                 Add New Offer
               </button>
             </div>
 
+            {/* Offer Form */}
             {showOfferForm && (
-              <div className="card max-w-2xl mb-8">
-                <h3 className="text-xl font-semibold mb-4">Create New Offer</h3>
-
+              <div className="card max-w-2xl mb-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  {editingOffer ? 'Edit Offer' : 'Create New Offer'}
+                </h3>
+                
                 <form onSubmit={handleOfferSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Title *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Offer Title</label>
                     <input
                       type="text"
                       required
                       value={offerForm.title}
                       onChange={(e) => setOfferForm({...offerForm, title: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input-field"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea
                       required
-                      rows={4}
                       value={offerForm.description}
                       onChange={(e) => setOfferForm({...offerForm, description: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input-field"
+                      rows={3}
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      required
-                      value={offerForm.category}
-                      onChange={(e) => setOfferForm({...offerForm, category: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select a category</option>
-                      {CATEGORIES.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="0.01"
+                        value={offerForm.originalPrice}
+                        onChange={(e) => setOfferForm({...offerForm, originalPrice: parseFloat(e.target.value) || 0})}
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Discounted Price (₹)</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="0.01"
+                        value={offerForm.discountedPrice}
+                        onChange={(e) => setOfferForm({...offerForm, discountedPrice: parseFloat(e.target.value) || 0})}
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Discount %</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={offerForm.originalPrice > 0 ? Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100) : 0}
+                        className="input-field bg-gray-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Valid Until</label>
+                      <input
+                        type="date"
+                        required
+                        value={offerForm.validUntil}
+                        onChange={(e) => setOfferForm({...offerForm, validUntil: e.target.value})}
+                        className="input-field"
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <select
+                        required
+                        value={offerForm.category}
+                        onChange={(e) => setOfferForm({...offerForm, category: e.target.value})}
+                        className="select-field"
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Expiry Date *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={offerForm.expiryDate}
-                      onChange={(e) => setOfferForm({...offerForm, expiryDate: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image (optional)
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Offer Image (Optional)</label>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setOfferForm({...offerForm, image: e.target.files?.[0] || null})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setOfferForm({...offerForm, imageFile: e.target.files?.[0] || null})}
+                      className="input-field"
                     />
                   </div>
 
                   <div className="flex gap-4">
-                    <button type="submit" className="btn-primary">
-                      Create Offer
+                    <button 
+                      type="submit" 
+                      disabled={uploading}
+                      className="btn-primary disabled:opacity-50"
+                    >
+                      {uploading ? 'Saving...' : editingOffer ? 'Update Offer' : 'Create Offer'}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowOfferForm(false)}
+                      onClick={() => {
+                        setShowOfferForm(false);
+                        setEditingOffer(null);
+                      }}
                       className="btn-secondary"
                     >
                       Cancel
@@ -388,32 +548,88 @@ export default function OwnerDashboard() {
               </div>
             )}
 
+            {/* Offers List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {offers.map(offer => (
-                <div key={offer.offerId} className="card">
-                  <h3 className="text-lg font-semibold mb-2">{offer.title}</h3>
-                  <p className="text-gray-600 mb-2">{offer.description}</p>
-                  <div className="text-sm text-gray-500 mb-4">
-                    Category: {offer.category} | Expires: {new Date(offer.expiryDate).toLocaleDateString()}
+              {offers.map((offer) => (
+                <div key={offer.id} className="card">
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">{offer.title}</h3>
+                      <p className="text-gray-600 text-sm">{offer.description}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Original Price:</span>
+                        <span className="line-through text-gray-500">₹{offer.originalPrice}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Discounted Price:</span>
+                        <span className="text-green-600 font-semibold">₹{offer.discountedPrice}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Discount:</span>
+                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
+                          {offer.discount}% OFF
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Valid Until:</span>
+                        <span className="text-sm">{new Date(offer.validUntil).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Category:</span>
+                        <span className="text-sm">{offer.category}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-3 border-t">
+                      <button
+                        onClick={() => {
+                          setEditingOffer(offer);
+                          setOfferForm({
+                            title: offer.title,
+                            description: offer.description,
+                            originalPrice: offer.originalPrice,
+                            discountedPrice: offer.discountedPrice,
+                            validUntil: offer.validUntil,
+                            category: offer.category,
+                            imageFile: null
+                          });
+                          setShowOfferForm(true);
+                        }}
+                        className="btn-secondary flex-1 text-sm py-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteOffer(offer.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-3 rounded-md transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteOffer(offer.offerId)}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Delete
-                  </button>
                 </div>
               ))}
             </div>
 
-            {offers.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                No offers yet. Create your first offer to get started!
+            {offers.length === 0 && !showOfferForm && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📢</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No offers yet</h3>
+                <p className="text-gray-600 mb-4">Create your first offer to start attracting customers!</p>
+                <button
+                  onClick={() => setShowOfferForm(true)}
+                  className="btn-primary"
+                >
+                  Create Your First Offer
+                </button>
               </div>
             )}
           </div>
         )}
-      </div>
+      </main>
 
       <BottomNav />
     </div>
