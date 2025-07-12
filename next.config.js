@@ -1,6 +1,13 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config, { isServer }) => {
+    // Handle undici compatibility issues
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'undici': false,
+    };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -11,7 +18,7 @@ const nextConfig = {
       };
     }
 
-    // Handle undici compatibility issues
+    // Fix ES module issues
     config.module.rules.push({
       test: /\.m?js$/,
       resolve: {
@@ -24,9 +31,10 @@ const nextConfig = {
   experimental: {
     esmExternals: 'loose',
   },
+  transpilePackages: ['framer-motion', 'react-icons'],
   images: {
     domains: ['firebasestorage.googleapis.com'],
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
