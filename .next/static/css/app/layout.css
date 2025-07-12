@@ -841,6 +841,9 @@ body {
 .mt-6{
   margin-top: 1.5rem;
 }
+.mr-1{
+  margin-right: 0.25rem;
+}
 .line-clamp-2{
   overflow: hidden;
   display: -webkit-box;
@@ -883,6 +886,9 @@ body {
 .h-full{
   height: 100%;
 }
+.h-3{
+  height: 0.75rem;
+}
 .min-h-screen{
   min-height: 100vh;
 }
@@ -894,6 +900,9 @@ body {
 }
 .w-full{
   width: 100%;
+}
+.w-3{
+  width: 0.75rem;
 }
 .max-w-2xl{
   max-width: 42rem;
