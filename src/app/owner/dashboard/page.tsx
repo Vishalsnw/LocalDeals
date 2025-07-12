@@ -170,6 +170,7 @@ export default function OwnerDashboard() {
         imageUrl: imageUrl || '',
         businessId: business.id,
         businessName: business.name,
+        ownerId: user.userId,
         location: user.city,
         updatedAt: new Date().toISOString()
       };

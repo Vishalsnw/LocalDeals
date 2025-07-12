@@ -54,32 +54,29 @@ export default function Home() {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      let q = query(
-        collection(db, 'offers'),
-        orderBy('createdAt', 'desc')
-      );
-
+      
+      // Build the query conditions array
+      const conditions = [];
+      
       if (selectedCity) {
-        q = query(
-          collection(db, 'offers'),
-          where('location', '==', selectedCity),
-          orderBy('createdAt', 'desc')
-        );
+        conditions.push(where('location', '==', selectedCity));
       }
-
+      
       if (selectedCategory) {
+        conditions.push(where('category', '==', selectedCategory));
+      }
+      
+      // Create the query with all conditions
+      let q;
+      if (conditions.length > 0) {
         q = query(
           collection(db, 'offers'),
-          where('category', '==', selectedCategory),
+          ...conditions,
           orderBy('createdAt', 'desc')
         );
-      }
-
-      if (selectedCity && selectedCategory) {
+      } else {
         q = query(
           collection(db, 'offers'),
-          where('location', '==', selectedCity),
-          where('category', '==', selectedCategory),
           orderBy('createdAt', 'desc')
         );
       }
