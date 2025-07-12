@@ -11,13 +11,19 @@ export interface Business {
   name: string;
   description: string;
   address: string;
-  city: string;
+  city?: string;
+  location?: string;
   phone?: string;
   email?: string;
+  website?: string;
+  whatsappLink?: string;
   whatsappNumber?: string;
+  category?: string;
   imageUrl?: string;
   ownerId: string;
+  ownerName?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Offer {
