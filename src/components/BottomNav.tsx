@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -19,7 +18,7 @@ export default function BottomNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom">
       <div className="flex justify-around items-center py-2 px-4">
-        
+
         {/* Home */}
         <Link href="/" className="flex flex-col items-center space-y-1 p-2 min-w-[60px] touch-manipulation">
           <div className="w-6 h-6 flex items-center justify-center">
@@ -51,26 +50,20 @@ export default function BottomNav() {
 
         {/* City */}
         {user.city && (
-          <div className="flex flex-col items-center space-y-1 p-2 min-w-[60px] touch-manipulation">
-            <div className="w-6 h-6 flex items-center justify-center">
-              <span className="text-lg">📍</span>
-            </div>
-            <span className="text-xs text-gray-600 font-medium">City</span>
-            <span className="text-xs text-gray-500 truncate max-w-[50px] block">{user.city}</span>
-          </div>
-        )}
+          
+)}
+
+        {/* Profile/City */}
+        <div className="flex flex-col items-center justify-center h-full px-3">
+          <span className="text-base mb-0.5">📍</span>
+          <span className="text-xs text-gray-600 truncate max-w-[50px]">{user.city}</span>
+        </div>
 
         {/* Logout */}
-        <button 
-          onClick={handleLogout}
-          className="flex flex-col items-center space-y-1 p-2 min-w-[60px] touch-manipulation hover:bg-red-50 rounded-lg transition-colors"
-        >
-          <div className="w-6 h-6 flex items-center justify-center">
-            <span className="text-lg">🚪</span>
-          </div>
-          <span className="text-xs text-gray-600 font-medium">Logout</span>
+        <button onClick={handleLogout} className="flex flex-col items-center justify-center h-full px-3 touch-manipulation">
+          <span className="text-base mb-0.5">🚪</span>
+          <span className="text-xs text-gray-600">Logout</span>
         </button>
+
       </div>
     </div>
-  );
-}
