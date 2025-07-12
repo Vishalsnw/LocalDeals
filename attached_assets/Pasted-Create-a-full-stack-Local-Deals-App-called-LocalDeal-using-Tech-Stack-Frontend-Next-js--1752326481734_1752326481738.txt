@@ -1,0 +1,70 @@
+Create a full-stack Local Deals App called "LocalDeal" using:
+
+🧩 Tech Stack:
+- Frontend: Next.js + TailwindCSS (deployed on Vercel)
+- Backend/Database: Firebase (Firestore + Firebase Auth + Firebase Storage)
+- Hosting/CI: GitHub repo (connect GitHub for CI/CD)
+
+🎯 App Purpose:
+- Business owners log in via Google and post deals for their city
+- Deals have: title, description, image, category, expiry date
+- Owners can add: phone number, website (optional), and WhatsApp contact
+- Users browse local deals and directly contact owners via WhatsApp or call
+
+👥 User Roles:
+- "user": Browses city-based deals
+- "owner": Manages their business profile and deals
+
+📂 Firebase Structure:
+- `users`: { userId, name, email, role ("user" or "owner"), city }
+- `businesses`: { businessId, name, city, phone, website, whatsappLink, ownerId }
+- `offers`: { offerId, title, description, imageUrl, businessId, city, category, expiryDate, createdAt }
+
+🌍 Core Features:
+1. Google Sign-In (Firebase) for both users and business owners
+2. On first login, ask user to select role (User or Owner)
+3. Auto-detect city or allow manual city select
+4. Users can:
+   - Browse deals in their city
+   - Filter by category (Food, Fitness, etc.)
+   - View offer details
+   - Contact business via WhatsApp, phone, or website
+5. Business Owners can:
+   - Register their business with contact info
+   - Add/Edit/Delete offers
+   - Upload images to Firebase Storage
+
+🖼️ Pages Required:
+- `/` → Home with city selector and filtered deals feed
+- `/login` → Google Sign-In + role selection (User or Owner)
+- `/owner/dashboard` → Business profile form + offers management
+- `/offer/[id]` → Offer details + contact buttons
+
+📋 Business Profile Fields:
+- Business Name
+- City
+- Phone Number
+- Website URL (optional)
+- WhatsApp Number or auto-generated link (`https://wa.me/<number>?text=Hi%2C%20I%20saw%20your%20deal%20on%20LocalDeal`)
+
+📋 Offer Fields:
+- Title
+- Description
+- Category (dropdown)
+- Expiry Date
+- Image upload
+
+📦 Firebase Rules:
+- Only business owner can edit their business and offers
+- Users have read-only access
+
+🎨 UI Design:
+- TailwindCSS for responsive layout
+- Offer cards with image, title, expiry
+- Contact buttons: WhatsApp (green), Phone (blue), Website (gray)
+
+🧪 Dev Setup:
+- Use Firebase SDK v9 (modular)
+- Store Firebase config in `.env.local`
+- Deploy frontend to Vercel
+- Connect GitHub for CI/CD
