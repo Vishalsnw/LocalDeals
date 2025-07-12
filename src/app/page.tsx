@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Offer, CATEGORIES, INDIAN_CITIES, City } from '@/types';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
-import { motion } from 'framer-motion';
 import { FiSearch, FiFilter, FiPlus, FiMapPin, FiTrendingUp, FiUsers, FiStar } from 'react-icons/fi';
 
 export default function Home() {
@@ -91,7 +89,7 @@ export default function Home() {
 
       // Add to Firestore
       await addDoc(collection(db, 'cities'), newCity);
-      
+
       // Add to local state
       setAvailableCities(prev => [...prev, newCity]);
       setSelectedCity(newCity.name);
@@ -117,15 +115,12 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+          <div
             className="text-center mb-12"
           >
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -135,13 +130,10 @@ export default function Home() {
             <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
               Find the best offers from local businesses in your city. Save money while supporting your community.
             </p>
-          </motion.div>
+          </div>
 
           {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          <div
             className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
           >
             {stats.map((stat, index) => (
@@ -151,23 +143,20 @@ export default function Home() {
                 <div className="text-white/70 text-sm">{stat.label}</div>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Filters Section */}
       <section className="py-8 bg-white/10 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+          <div
             className="grid grid-cols-1 lg:grid-cols-4 gap-6"
           >
             {/* Search */}
             <div className="lg:col-span-1">
               <div className="relative">
-                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
                 <input
                   type="text"
                   placeholder="Search deals..."
@@ -181,6 +170,8 @@ export default function Home() {
             {/* City Selection */}
             <div className="lg:col-span-1">
               <div className="flex space-x-2">
+                <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📍</span>
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
@@ -193,44 +184,40 @@ export default function Home() {
                     </option>
                   ))}
                 </select>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              </div>
+                <button
                   onClick={() => setShowAddCity(true)}
                   className="btn-secondary px-3"
                   title="Add custom city"
                 >
                   <FiPlus />
-                </motion.button>
+                </button>
               </div>
             </div>
 
             {/* Category Filter */}
             <div className="lg:col-span-1">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="select-field"
-              >
-                <option value="">All Categories</option>
-                {CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔽</span>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Categories</option></select>
+              </div>
             </div>
 
             {/* Filter Button */}
             <div className="lg:col-span-1">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 className="btn-primary w-full flex items-center justify-center space-x-2"
               >
                 <FiFilter />
                 <span>Apply Filters</span>
-              </motion.button>
+              </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -248,9 +235,7 @@ export default function Home() {
               ))}
             </div>
           ) : filteredOffers.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+            <div
               className="text-center py-20"
             >
               <FiMapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -258,7 +243,7 @@ export default function Home() {
               <p className="text-white/70 max-w-md mx-auto">
                 {selectedCity ? 'No deals available in this city yet. Check back soon!' : 'Please select a city to view deals.'}
               </p>
-            </motion.div>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredOffers.map((offer, index) => (
@@ -271,18 +256,14 @@ export default function Home() {
 
       {/* Add City Modal */}
       {showAddCity && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+          <div
             className="floating-card max-w-md w-full p-6"
           >
             <h3 className="text-xl font-bold mb-4">Add Custom City</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -296,7 +277,7 @@ export default function Home() {
                   placeholder="Enter city name"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   State
@@ -310,7 +291,7 @@ export default function Home() {
                 />
               </div>
             </div>
-            
+
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={() => setShowAddCity(false)}
@@ -326,8 +307,8 @@ export default function Home() {
                 Add City
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

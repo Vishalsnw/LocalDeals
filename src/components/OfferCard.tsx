@@ -1,11 +1,10 @@
-
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Offer } from '@/types';
-import { motion } from 'framer-motion';
-import { FiCalendar, FiMapPin, FiTag, FiClock } from 'react-icons/fi';
+// import { motion } from 'framer-motion';
+// import { FiCalendar, FiMapPin, FiTag, FiClock } from 'react-icons/fi';
 
 interface OfferCardProps {
   offer: Offer;
@@ -36,11 +35,7 @@ export default function OfferCard({ offer, index = 0 }: OfferCardProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
+    <div
       className="group"
     >
       <Link href={`/offer/${offer.offerId}`}>
@@ -77,7 +72,8 @@ export default function OfferCard({ offer, index = 0 }: OfferCardProps) {
                 {offer.title}
               </h3>
               <div className="category-badge ml-2 flex-shrink-0">
-                <FiTag className="w-3 h-3 mr-1" />
+                {/* <FiTag className="w-3 h-3 mr-1" /> */}
+                🏷️
                 {offer.category}
               </div>
             </div>
@@ -87,24 +83,26 @@ export default function OfferCard({ offer, index = 0 }: OfferCardProps) {
             </p>
 
             {/* Footer info */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <div className="flex items-center space-x-1">
-                  <FiMapPin className="w-4 h-4 text-blue-600" />
-                  <span>{offer.city}</span>
+                    <span className="text-blue-600">📅</span>
+                    <span>Expires: {new Date(offer.expiryDate).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <FiCalendar className="w-4 h-4 text-green-600" />
-                  <span>Until {formatDate(offer.expiryDate)}</span>
+                    <span className="text-blue-600">📍</span>
+                    <span>{offer.city}</span>
                 </div>
-              </div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="offer-badge"
-              >
-                View Deal
-              </motion.div>
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center space-x-1">
+                    <span className="text-purple-600">🏷️</span>
+                    <span className="text-sm font-medium text-purple-600">{offer.category}</span>
+                </div>
+                <div className="flex items-center space-x-1 text-sm text-gray-500">
+                    <span>🕒</span>
+                    <span>{offer.timeLeft}</span>
+                </div>
             </div>
           </div>
 
@@ -112,6 +110,6 @@ export default function OfferCard({ offer, index = 0 }: OfferCardProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }
