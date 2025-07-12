@@ -13,7 +13,7 @@ export interface Business {
   city: string;
   phone: string;
   website?: string;
-  whatsappLink: string;
+  whatsappLink?: string;
   ownerId: string;
 }
 

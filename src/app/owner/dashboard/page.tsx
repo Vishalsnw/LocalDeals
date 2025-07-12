@@ -100,19 +100,20 @@ export default function OwnerDashboard() {
         ? `https://wa.me/${businessForm.whatsappNumber.replace(/\D/g, '')}?text=Hi%2C%20I%20saw%20your%20deal%20on%20LocalDeal`
         : '';
 
-      const businessData: Business = {
+      const businessData = {
         businessId: user.userId,
         name: businessForm.name.trim(),
         city: user.city,
         phone: businessForm.phone.trim(),
-        website: businessForm.website.trim() || undefined,
-        whatsappLink,
+        website: businessForm.website.trim() || '',
+        whatsappLink: whatsappLink || '',
         ownerId: user.userId,
       };
 
       await setDoc(doc(db, 'businesses', user.userId), businessData);
-      setBusiness(businessData);
+      setBusiness(businessData as Business);
       setShowBusinessForm(false);
+      alert('Business details saved successfully!');
     } catch (error) {
       console.error('Error saving business:', error);
       alert('Error saving business. Please try again.');
