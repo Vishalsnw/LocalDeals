@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -121,10 +120,24 @@ export default function Home() {
     offer.businessName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Welcome to LocalDeal</h1>
+          <p className="text-gray-600 mb-6">Please sign in to continue</p>
+          <a href="/login" className="btn-primary">
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
-      
+
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Hero Section */}
         <div className="text-center mb-8 animate-fadeIn">
@@ -155,7 +168,7 @@ export default function Home() {
         {/* Search and Filter Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8 animate-slideInLeft">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            
+
             {/* Search */}
             <div className="lg:col-span-2">
               <div className="relative">
@@ -222,7 +235,7 @@ export default function Home() {
               {selectedCategory && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
                   🏷️ {selectedCategory}
-                  <button 
+                  <button
                     onClick={() => setSelectedCategory('')}
                     className="ml-2 text-blue-600 hover:text-blue-800"
                   >
@@ -233,7 +246,7 @@ export default function Home() {
               {selectedCity && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
                   📍 {selectedCity}
-                  <button 
+                  <button
                     onClick={() => setSelectedCity('')}
                     className="ml-2 text-green-600 hover:text-green-800"
                   >
@@ -280,7 +293,7 @@ export default function Home() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Add Custom City</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City Name</label>
@@ -292,7 +305,7 @@ export default function Home() {
                   placeholder="Enter city name"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                 <input
