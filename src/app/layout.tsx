@@ -29,5 +29,7 @@ export default function RootLayout({
         </AuthProvider>
       </body>
     </html>
-  );
-}
+      );
+    }
+
+export const metadata: Metadata = {

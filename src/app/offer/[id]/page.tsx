@@ -51,6 +51,133 @@ export default function OfferDetails() {
     );
   }
 
+  if (!offer) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Offer Not Found</h1>
+            <p className="text-gray-600">The offer you're looking for doesn't exist.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isExpired = offer.validUntil ? new Date(offer.validUntil) < new Date() : false;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {offer.imageUrl && (
+            <div className="relative h-64 md:h-80">
+              <Image
+                src={offer.imageUrl}
+                alt={offer.title}
+                fill
+                className="object-cover"
+              />
+              {offer.discount > 0 && (
+                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-lg font-bold">
+                  {offer.discount}% OFF
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{offer.title}</h1>
+                <p className="text-gray-600 text-lg mb-4">{offer.description}</p>
+                
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-green-600">₹{offer.discountedPrice}</span>
+                    <span className="text-xl text-gray-500 line-through">₹{offer.originalPrice}</span>
+                  </div>
+                  {offer.discount > 0 && (
+                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
+                      {offer.discount}% OFF
+                    </span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Offer Details</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-600">
+                        <span className="font-medium">Valid Until:</span> {' '}
+                        {offer.validUntil ? new Date(offer.validUntil).toLocaleDateString() : 'N/A'}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-medium">Category:</span> {offer.category}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-medium">Location:</span> {offer.location}
+                      </p>
+                      {isExpired && (
+                        <p className="text-red-600 font-medium">⚠️ This offer has expired</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {business && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Business Details</h3>
+                      <div className="space-y-2">
+                        <p className="text-gray-600">
+                          <span className="font-medium">Business:</span> {business.name}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-medium">Address:</span> {business.address}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-medium">Phone:</span> {business.phone}
+                        </p>
+                        {business.website && (
+                          <p className="text-gray-600">
+                            <span className="font-medium">Website:</span> {' '}
+                            <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              {business.website}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {business && business.whatsappLink && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold text-gray-900 mb-3">Contact Business</h3>
+                    <a
+                      href={business.whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488z"/>
+                      </svg>
+                      Contact via WhatsApp
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
   if (!offer || !business) {
     return (
       <div className="min-h-screen bg-gray-50">
