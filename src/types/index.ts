@@ -1,8 +1,9 @@
 export interface User {
-  uid: string;
+  userId: string;
+  name: string;
   email: string;
-  displayName?: string;
-  role?: 'customer' | 'owner';
+  role: 'user' | 'owner';
+  city: string;
 }
 
 export interface Business {
