@@ -29,6 +29,25 @@ export default function OwnerDashboard() {
     category: ''
   });
 
+  // Function to generate WhatsApp link from phone number
+  const generateWhatsAppLink = (phone: string) => {
+    if (!phone) return '';
+    // Remove all non-digit characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    // Add country code if not present (assuming India +91)
+    const phoneWithCountryCode = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+    return `https://wa.me/${phoneWithCountryCode}`;
+  };
+
+  // Auto-generate WhatsApp link when phone changes
+  const handlePhoneChange = (phone: string) => {
+    setBusinessForm({
+      ...businessForm, 
+      phone: phone,
+      whatsappLink: generateWhatsAppLink(phone)
+    });
+  };
+
   const [offerForm, setOfferForm] = useState({
     title: '',
     description: '',
@@ -296,10 +315,12 @@ export default function OwnerDashboard() {
                     <input
                       type="tel"
                       required
+                      placeholder="10-digit mobile number"
                       value={businessForm.phone}
-                      onChange={(e) => setBusinessForm({...businessForm, phone: e.target.value})}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
                       className="input-field"
                     />
+                    <p className="text-xs text-gray-500 mt-1">WhatsApp link will be auto-generated</p>
                   </div>
 
                   <div>
@@ -341,13 +362,18 @@ export default function OwnerDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Link (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Link</label>
                     <input
                       type="url"
                       value={businessForm.whatsappLink}
                       onChange={(e) => setBusinessForm({...businessForm, whatsappLink: e.target.value})}
-                      className="input-field"
+                      className="input-field bg-gray-50"
+                      placeholder="Auto-generated from phone number"
+                      readOnly
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {businessForm.whatsappLink ? '✅ WhatsApp link ready' : 'Enter phone number to generate'}
+                    </p>
                   </div>
                 </div>
 

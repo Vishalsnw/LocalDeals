@@ -8,13 +8,20 @@ export interface User {
 }
 
 export interface Business {
-  businessId: string;
+  id?: string;
+  businessId?: string;
   name: string;
-  city: string;
+  description: string;
   phone: string;
+  address: string;
   website?: string;
   whatsappLink?: string;
+  category: string;
+  location: string;
   ownerId: string;
+  ownerName?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Offer {
