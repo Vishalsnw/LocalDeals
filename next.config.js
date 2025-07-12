@@ -4,7 +4,6 @@ const nextConfig = {
     appDir: true,
   },
   webpack: (config, { isServer }) => {
-    // Handle client-side fallbacks
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
