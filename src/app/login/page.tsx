@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -30,7 +29,7 @@ export default function Login() {
 
   const handleRoleSubmit = async () => {
     if (!selectedCity) return;
-    
+
     try {
       await updateUserRole(selectedRole, selectedCity);
       router.push('/');
@@ -44,7 +43,7 @@ export default function Login() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="card max-w-md w-full">
           <h2 className="text-2xl font-bold text-center mb-6">Complete Your Profile</h2>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -73,7 +72,7 @@ export default function Login() {
                 </label>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Your City
@@ -81,17 +80,48 @@ export default function Login() {
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose a city</option>
-                <option value="New York">New York</option>
-                <option value="Los Angeles">Los Angeles</option>
-                <option value="Chicago">Chicago</option>
-                <option value="Houston">Houston</option>
-                <option value="Phoenix">Phoenix</option>
+                <option value="Mumbai">Mumbai, Maharashtra</option>
+                <option value="Delhi">Delhi, Delhi</option>
+                <option value="Bangalore">Bangalore, Karnataka</option>
+                <option value="Hyderabad">Hyderabad, Telangana</option>
+                <option value="Chennai">Chennai, Tamil Nadu</option>
+                <option value="Kolkata">Kolkata, West Bengal</option>
+                <option value="Pune">Pune, Maharashtra</option>
+                <option value="Ahmedabad">Ahmedabad, Gujarat</option>
+                <option value="Surat">Surat, Gujarat</option>
+                <option value="Jaipur">Jaipur, Rajasthan</option>
+                <option value="Lucknow">Lucknow, Uttar Pradesh</option>
+                <option value="Kanpur">Kanpur, Uttar Pradesh</option>
+                <option value="Nagpur">Nagpur, Maharashtra</option>
+                <option value="Indore">Indore, Madhya Pradesh</option>
+                <option value="Thane">Thane, Maharashtra</option>
+                <option value="Bhopal">Bhopal, Madhya Pradesh</option>
+                <option value="Visakhapatnam">Visakhapatnam, Andhra Pradesh</option>
+                <option value="Vadodara">Vadodara, Gujarat</option>
+                <option value="Ludhiana">Ludhiana, Punjab</option>
+                <option value="Rajkot">Rajkot, Gujarat</option>
+                <option value="Agra">Agra, Uttar Pradesh</option>
+                <option value="Nashik">Nashik, Maharashtra</option>
+                <option value="Faridabad">Faridabad, Haryana</option>
+                <option value="Patiala">Patiala, Punjab</option>
+                <option value="Ghaziabad">Ghaziabad, Uttar Pradesh</option>
+                <option value="Coimbatore">Coimbatore, Tamil Nadu</option>
+                <option value="Madurai">Madurai, Tamil Nadu</option>
+                <option value="Jabalpur">Jabalpur, Madhya Pradesh</option>
+                <option value="Kochi">Kochi, Kerala</option>
+                <option value="Jodhpur">Jodhpur, Rajasthan</option>
+                <option value="Guwahati">Guwahati, Assam</option>
+                <option value="Chandigarh">Chandigarh, Chandigarh</option>
+                <option value="Thiruvananthapuram">Thiruvananthapuram, Kerala</option>
+                <option value="Mysore">Mysore, Karnataka</option>
+                <option value="Gurgaon">Gurgaon, Haryana</option>
+                <option value="Bhubaneswar">Bhubaneswar, Odisha</option>
               </select>
             </div>
-            
+
             <button
               onClick={handleRoleSubmit}
               disabled={!selectedCity}
@@ -110,7 +140,7 @@ export default function Login() {
       <div className="card max-w-md w-full text-center">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">LocalDeal</h1>
         <p className="text-gray-600 mb-8">Find amazing deals from local businesses</p>
-        
+
         <button
           onClick={handleGoogleSignIn}
           className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
