@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Offer } from '@/types';
-// import { motion } from 'framer-motion';
-// import { FiCalendar, FiMapPin, FiTag, FiClock } from 'react-icons/fi';
 
 interface OfferCardProps {
   offer: Offer;

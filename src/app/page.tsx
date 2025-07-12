@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Offer, CATEGORIES, INDIAN_CITIES, City } from '@/types';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
-import { FiSearch, FiFilter, FiPlus, FiMapPin, FiTrendingUp, FiUsers, FiStar } from 'react-icons/fi';
+import BottomNav from '@/components/BottomNav';
 
 export default function Home() {
   const { user } = useAuth();
@@ -107,9 +107,9 @@ export default function Home() {
   );
 
   const stats = [
-    { icon: FiTrendingUp, label: 'Active Deals', value: filteredOffers.length, color: 'text-blue-600' },
-    { icon: FiUsers, label: 'Local Businesses', value: new Set(offers.map(o => o.businessId)).size, color: 'text-green-600' },
-    { icon: FiStar, label: 'Categories', value: new Set(offers.map(o => o.category)).size, color: 'text-purple-600' },
+    { icon: '📈', label: 'Active Deals', value: filteredOffers.length, color: 'text-blue-600' },
+    { icon: '🏢', label: 'Local Businesses', value: new Set(offers.map(o => o.businessId)).size, color: 'text-green-600' },
+    { icon: '⭐', label: 'Categories', value: new Set(offers.map(o => o.category)).size, color: 'text-purple-600' },
   ];
 
   return (
@@ -120,27 +120,26 @@ export default function Home() {
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div
-            className="text-center mb-12"
-          >
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Discover Amazing
               <span className="block gradient-text">Local Deals</span>
             </h1>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
               Find the best offers from local businesses in your city. Save money while supporting your community.
             </p>
           </div>
 
           {/* Stats */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 px-4">
             {stats.map((stat, index) => (
-              <div key={stat.label} className="glass-card p-6 text-center">
-                <stat.icon className={`w-8 h-8 ${stat.color} mx-auto mb-3`} />
-                <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-white/70 text-sm">{stat.label}</div>
+              <div
+                key={stat.label}
+                className="floating-card p-4 text-center"
+              >
+                <div className="text-2xl mb-2">{stat.icon}</div>
+                <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -190,7 +189,7 @@ export default function Home() {
                   className="btn-secondary px-3"
                   title="Add custom city"
                 >
-                  <FiPlus />
+                  ➕
                 </button>
               </div>
             </div>
@@ -204,7 +203,11 @@ export default function Home() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">All Categories</option></select>
+                  <option value="">All Categories</option>
+                  {CATEGORIES.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -213,7 +216,6 @@ export default function Home() {
               <button
                 className="btn-primary w-full flex items-center justify-center space-x-2"
               >
-                <FiFilter />
                 <span>Apply Filters</span>
               </button>
             </div>
@@ -238,7 +240,6 @@ export default function Home() {
             <div
               className="text-center py-20"
             >
-              <FiMapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-white mb-2">No deals found</h3>
               <p className="text-white/70 max-w-md mx-auto">
                 {selectedCity ? 'No deals available in this city yet. Check back soon!' : 'Please select a city to view deals.'}
@@ -310,6 +311,8 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <BottomNav />
     </div>
   );
 }

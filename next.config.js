@@ -1,8 +1,7 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config, { isServer }) => {
-    // Handle undici compatibility issues
+    // Handle Node.js modules that shouldn't run in browser
     config.resolve.alias = {
       ...config.resolve.alias,
       'undici': false,
@@ -11,10 +10,21 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
         crypto: require.resolve('crypto-browserify'),
+        stream: false,
+        assert: false,
+        http: false,
+        https: false,
+        os: false,
+        url: false,
+        zlib: false,
+        net: false,
+        fs: false,
+        tls: false,
+        child_process: false,
+        'node:crypto': false,
+        'node:stream': false,
+        'node:util': false,
       };
     }
 
@@ -26,12 +36,17 @@ const nextConfig = {
       },
     });
 
+    // Ignore undici in all contexts
+    config.externals = config.externals || [];
+    if (Array.isArray(config.externals)) {
+      config.externals.push('undici');
+    }
+
     return config;
   },
   experimental: {
     esmExternals: 'loose',
   },
-  transpilePackages: ['framer-motion', 'react-icons'],
   images: {
     domains: ['firebasestorage.googleapis.com'],
   },

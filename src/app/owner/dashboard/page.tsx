@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,6 +8,7 @@ import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Business, Offer, CATEGORIES } from '@/types';
 import Navbar from '@/components/Navbar';
+import BottomNav from '@/components/BottomNav';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
@@ -41,7 +41,7 @@ export default function OwnerDashboard() {
       router.push('/login');
       return;
     }
-    
+
     if (user.role !== 'owner') {
       router.push('/');
       return;
@@ -113,7 +113,7 @@ export default function OwnerDashboard() {
 
     try {
       let imageUrl = '';
-      
+
       if (offerForm.image) {
         const imageRef = ref(storage, `offers/${Date.now()}_${offerForm.image.name}`);
         await uploadBytes(imageRef, offerForm.image);
@@ -171,17 +171,17 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Business Dashboard</h1>
-          
+
           {!business || showBusinessForm ? (
             <div className="card max-w-2xl">
               <h2 className="text-xl font-semibold mb-4">
                 {business ? 'Edit Business Profile' : 'Set Up Your Business Profile'}
               </h2>
-              
+
               <form onSubmit={handleBusinessSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -195,7 +195,7 @@ export default function OwnerDashboard() {
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number *
@@ -208,7 +208,7 @@ export default function OwnerDashboard() {
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Website (optional)
@@ -220,7 +220,7 @@ export default function OwnerDashboard() {
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     WhatsApp Number (optional)
@@ -233,7 +233,7 @@ export default function OwnerDashboard() {
                     placeholder="e.g., +1234567890"
                   />
                 </div>
-                
+
                 <div className="flex gap-4">
                   <button type="submit" className="btn-primary">
                     {business ? 'Update Business' : 'Save Business'}
@@ -289,7 +289,7 @@ export default function OwnerDashboard() {
             {showOfferForm && (
               <div className="card max-w-2xl mb-8">
                 <h3 className="text-xl font-semibold mb-4">Create New Offer</h3>
-                
+
                 <form onSubmit={handleOfferSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -303,7 +303,7 @@ export default function OwnerDashboard() {
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Description *
@@ -316,7 +316,7 @@ export default function OwnerDashboard() {
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category *
@@ -333,7 +333,7 @@ export default function OwnerDashboard() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Expiry Date *
@@ -346,7 +346,7 @@ export default function OwnerDashboard() {
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Image (optional)
@@ -358,7 +358,7 @@ export default function OwnerDashboard() {
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div className="flex gap-4">
                     <button type="submit" className="btn-primary">
                       Create Offer
@@ -401,6 +401,8 @@ export default function OwnerDashboard() {
           </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }

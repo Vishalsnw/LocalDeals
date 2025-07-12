@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -21,7 +20,7 @@ export default function Navbar() {
               </div>
             </Link>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {user ? (
               <>
@@ -29,14 +28,14 @@ export default function Navbar() {
                   <span className="text-blue-600">👤</span>
                   <span className="font-medium">Hi, {user.name}</span>
                 </div>
-                
+
                 {user.city && (
                   <div className="flex items-center space-x-1">
                     <span className="text-blue-600 text-sm">📍</span>
                     <span className="city-badge">{user.city}</span>
                   </div>
                 )}
-                
+
                 {user.role === 'owner' && (
                   <div>
                     <Link href="/owner/dashboard" className="btn-primary">
@@ -44,7 +43,7 @@ export default function Navbar() {
                     </Link>
                   </div>
                 )}
-                
+
                 <button 
                   onClick={logout} 
                   className="flex items-center space-x-1 btn-secondary"
