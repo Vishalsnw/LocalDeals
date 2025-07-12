@@ -18,6 +18,7 @@ export interface Business {
 }
 
 export interface Offer {
+  id: string;
   offerId: string;
   title: string;
   description: string;
@@ -25,6 +26,10 @@ export interface Offer {
   businessId: string;
   city: string;
   category: string;
+  originalPrice: number;
+  discountedPrice: number;
+  discount: number;
+  validUntil: string;
   expiryDate: string;
   createdAt: string;
 }

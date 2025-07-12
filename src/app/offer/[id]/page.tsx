@@ -62,7 +62,8 @@ export default function OfferDetails() {
     );
   }
 
-  const isExpired = new Date(offer.expiryDate) < new Date();
+  const expiryDate = offer.validUntil || offer.expiryDate;
+  const isExpired = expiryDate ? new Date(expiryDate) < new Date() : false;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,7 +91,7 @@ export default function OfferDetails() {
                 </span>
                 <span>📍 {offer.city}</span>
                 <span>
-                  {isExpired ? '❌ Expired' : `⏰ Expires ${new Date(offer.expiryDate).toLocaleDateString()}`}
+                  {isExpired ? '❌ Expired' : expiryDate ? `⏰ Expires ${new Date(expiryDate).toLocaleDateString()}` : '⏰ No expiry'}
                 </span>
               </div>
             </div>

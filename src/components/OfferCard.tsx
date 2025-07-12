@@ -10,10 +10,11 @@ interface OfferCardProps {
 }
 
 export default function OfferCard({ offer }: OfferCardProps) {
-  const isExpired = new Date(offer.expiryDate) < new Date();
+  const expiryDate = offer.validUntil || offer.expiryDate;
+  const isExpired = expiryDate ? new Date(expiryDate) < new Date() : false;
   const discount = offer.originalPrice > 0 
     ? Math.round(((offer.originalPrice - offer.discountedPrice) / offer.originalPrice) * 100)
-    : 0;
+    : offer.discount || 0;
 
   return (
     <div className="card hover:shadow-lg transition-all duration-300">
@@ -67,7 +68,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
             <div className="flex items-center space-x-1">
               <span>⏰</span>
               <span>
-                {isExpired ? 'Expired' : `Until ${new Date(offer.expiryDate).toLocaleDateString()}`}
+                {isExpired ? 'Expired' : expiryDate ? `Until ${new Date(expiryDate).toLocaleDateString()}` : 'No expiry'}
               </span>
             </div>
           </div>

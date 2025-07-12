@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -64,14 +63,14 @@ export default function OwnerDashboard() {
 
     try {
       setLoading(true);
-      
+
       // Fetch business
       const businessQuery = query(
         collection(db, 'businesses'),
         where('ownerId', '==', user.userId)
       );
       const businessSnapshot = await getDocs(businessQuery);
-      
+
       if (!businessSnapshot.empty) {
         const businessData = businessSnapshot.docs[0].data() as Business;
         setBusiness({ ...businessData, id: businessSnapshot.docs[0].id });
@@ -98,7 +97,7 @@ export default function OwnerDashboard() {
         id: doc.id,
         ...doc.data()
       })) as Offer[];
-      
+
       setOffers(offersData);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -113,7 +112,7 @@ export default function OwnerDashboard() {
 
     try {
       setUploading(true);
-      
+
       const businessData = {
         ...businessForm,
         ownerId: user.userId,
@@ -149,7 +148,7 @@ export default function OwnerDashboard() {
 
     try {
       setUploading(true);
-      
+
       let imageUrl = '';
       if (offerForm.imageFile) {
         const imageRef = ref(storage, `offers/${Date.now()}_${offerForm.imageFile.name}`);
@@ -164,11 +163,11 @@ export default function OwnerDashboard() {
         description: offerForm.description,
         originalPrice: offerForm.originalPrice,
         discountedPrice: offerForm.discountedPrice,
-        discount,
+        discount: Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100),
         validUntil: offerForm.validUntil,
+        expiryDate: offerForm.validUntil,
         category: offerForm.category,
-        imageUrl,
-        ownerId: user.userId,
+        imageUrl: imageUrl || '',
         businessId: business.id,
         businessName: business.name,
         location: user.city,
@@ -243,7 +242,7 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
-      
+
       <main className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Dashboard</h1>
@@ -424,7 +423,7 @@ export default function OwnerDashboard() {
                 <h3 className="text-lg font-semibold mb-4">
                   {editingOffer ? 'Edit Offer' : 'Create New Offer'}
                 </h3>
-                
+
                 <form onSubmit={handleOfferSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Offer Title</label>
