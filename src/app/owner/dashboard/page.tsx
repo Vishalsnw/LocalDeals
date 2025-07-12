@@ -82,7 +82,18 @@ export default function OwnerDashboard() {
 
   const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!user) return;
+
+    // Validate required fields
+    if (!businessForm.name.trim()) {
+      alert('Business name is required');
+      return;
+    }
+    if (!businessForm.phone.trim()) {
+      alert('Phone number is required');
+      return;
+    }
 
     try {
       const whatsappLink = businessForm.whatsappNumber 
@@ -91,10 +102,10 @@ export default function OwnerDashboard() {
 
       const businessData: Business = {
         businessId: user.userId,
-        name: businessForm.name,
+        name: businessForm.name.trim(),
         city: user.city,
-        phone: businessForm.phone,
-        website: businessForm.website || undefined,
+        phone: businessForm.phone.trim(),
+        website: businessForm.website.trim() || undefined,
         whatsappLink,
         ownerId: user.userId,
       };
@@ -104,6 +115,7 @@ export default function OwnerDashboard() {
       setShowBusinessForm(false);
     } catch (error) {
       console.error('Error saving business:', error);
+      alert('Error saving business. Please try again.');
     }
   };
 
