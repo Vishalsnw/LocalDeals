@@ -9,6 +9,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'LocalDeal - Discover Amazing Local Deals',
   description: 'Find the best offers from local businesses in your city. Save money while supporting your community.',
+  keywords: 'local deals, discounts, offers, business, shopping, save money',
+  openGraph: {
+    title: 'LocalDeal - Discover Amazing Local Deals',
+    description: 'Find the best offers from local businesses in your city.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

@@ -11,15 +11,15 @@ import Navbar from '@/components/Navbar';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
-  const [business, setBusiness] = useState<Business | null>(null);
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [showBusinessForm, setShowBusinessForm] = useState(false);
-  const [showOfferForm, setShowOfferForm] = useState(false);
-  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [business, setBusiness = useState<Business | null>(null);
+  const [offers, setOffers = useState<Offer[]>([]);
+  const [showBusinessForm, setShowBusinessForm = useState(false);
+  const [showOfferForm, setShowOfferForm = useState(false);
+  const [editingOffer, setEditingOffer = useState<Offer | null>(null);
+  const [loading, setLoading = useState(true);
+  const [uploading, setUploading = useState(false);
 
-  const [businessForm, setBusinessForm] = useState({
+  const [businessForm, setBusinessForm = useState({
     name: '',
     description: '',
     phone: '',
@@ -29,7 +29,7 @@ export default function OwnerDashboard() {
     category: ''
   });
 
-  const [offerForm, setOfferForm] = useState({
+  const [offerForm, setOfferForm = useState({
     title: '',
     description: '',
     originalPrice: 0,
@@ -165,14 +165,15 @@ export default function OwnerDashboard() {
         discountedPrice: offerForm.discountedPrice,
         discount: Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100),
         validUntil: offerForm.validUntil,
-        expiryDate: offerForm.validUntil,
         category: offerForm.category,
-        imageUrl: imageUrl || '',
-        businessId: business.id,
+        businessId: business.businessId,
         businessName: business.name,
+        location: business.city,
+        imageUrl: imageUrl || '',
         ownerId: user.userId,
-        location: user.city,
-        updatedAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        expiryDate: offerForm.validUntil
       };
 
       if (editingOffer?.id) {

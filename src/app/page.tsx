@@ -55,41 +55,37 @@ export default function Home() {
     try {
       setLoading(true);
 
-      // Build the query conditions array
-      const conditions = [];
+      // Start with basic query
+      let q = query(
+        collection(db, 'offers'),
+        orderBy('createdAt', 'desc')
+      );
 
-      if (selectedCity) {
-        conditions.push(where('location', '==', selectedCity));
-      }
-
-      if (selectedCategory) {
-        conditions.push(where('category', '==', selectedCategory));
-      }
-
-      // Create the query with all conditions
-      let q;
-      if (conditions.length > 0) {
-        q = query(
-          collection(db, 'offers'),
-          ...conditions,
-          orderBy('createdAt', 'desc')
-        );
-      } else {
-        q = query(
-          collection(db, 'offers'),
-          orderBy('createdAt', 'desc')
-        );
-      }
-
+      // For complex filtering, we'll fetch all and filter in memory
+      // This is necessary because Firestore has limitations with compound queries
       const querySnapshot = await getDocs(q);
-      const offersData = querySnapshot.docs.map(doc => ({
+      let offersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Offer[];
 
+      // Apply filters in memory
+      if (selectedCity) {
+        offersData = offersData.filter(offer => 
+          offer.location === selectedCity
+        );
+      }
+
+      if (selectedCategory) {
+        offersData = offersData.filter(offer => 
+          offer.category === selectedCategory
+        );
+      }
+
       setOffers(offersData);
     } catch (error) {
       console.error('Error fetching offers:', error);
+      setOffers([]);
     } finally {
       setLoading(false);
     }
