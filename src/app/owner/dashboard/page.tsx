@@ -6,7 +6,6 @@ import { collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc } 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { Business, Offer } from '@/types';
-import BottomNav from '@/components/BottomNav';
 import Navbar from '@/components/Navbar';
 
 export default function OwnerDashboard() {

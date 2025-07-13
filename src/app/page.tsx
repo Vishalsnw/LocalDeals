@@ -5,7 +5,6 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Offer } from '@/types';
-import BottomNav from '@/components/BottomNav';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
 
