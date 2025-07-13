@@ -35,14 +35,15 @@ export default function Home() {
 
   const categories = [
     { value: 'all', label: 'All Categories' },
-    { value: 'food', label: '🍔 Food & Dining' },
-    { value: 'fashion', label: '👗 Fashion' },
-    { value: 'electronics', label: '📱 Electronics' },
-    { value: 'beauty', label: '💄 Beauty' },
-    { value: 'health', label: '💊 Health' },
-    { value: 'entertainment', label: '🎬 Entertainment' },
-    { value: 'services', label: '🔧 Services' },
-    { value: 'other', label: '🎯 Other' },
+    { value: 'Food & Dining', label: '🍔 Food & Dining' },
+    { value: 'Fashion', label: '👗 Fashion' },
+    { value: 'Electronics', label: '📱 Electronics' },
+    { value: 'Health & Beauty', label: '💄 Beauty' },
+    { value: 'Services', label: '🔧 Services' },
+    { value: 'Entertainment', label: '🎬 Entertainment' },
+    { value: 'Shopping', label: '🛍️ Shopping' },
+    { value: 'Travel', label: '✈️ Travel' },
+    { value: 'Other', label: '🎯 Other' },
   ];
 
   const fetchOffers = async () => {
@@ -53,7 +54,7 @@ export default function Home() {
       // Fetch offers for the selected city
       const offersQuery = query(
         collection(db, 'offers'),
-        where('city', '==', selectedCity),
+        where('location', '==', selectedCity),
         orderBy('createdAt', 'desc')
       );
       const offersSnapshot = await getDocs(offersQuery);
@@ -65,7 +66,7 @@ export default function Home() {
       // Fetch businesses for the selected city
       const businessesQuery = query(
         collection(db, 'businesses'),
-        where('city', '==', selectedCity)
+        where('location', '==', selectedCity)
       );
       const businessesSnapshot = await getDocs(businessesQuery);
       const businessesData = businessesSnapshot.docs.map(doc => ({
@@ -110,81 +111,49 @@ export default function Home() {
     }
   }, [selectedCity, selectedCategory]);
 
+  // Filter offers based on search and category
   const filteredOffers = offers.filter(offer => {
+    const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         offer.businessName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
     const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
-    const matchesSearch = searchTerm === '' || 
-      offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      offer.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    return matchesSearch && matchesCategory;
   });
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h1 className="text-xl font-medium text-gray-800">Loading...</h1>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl">🛍️</span>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">LocalDeal</h1>
-            <p className="text-gray-600 mb-8">Discover amazing local deals in your city</p>
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">💰</span>
-                </div>
-                <p className="text-sm text-gray-600">Save Money</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">🏪</span>
-                </div>
-                <p className="text-sm text-gray-600">Local Business</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">🎯</span>
-                </div>
-                <p className="text-sm text-gray-600">Best Deals</p>
-              </div>
-            </div>
-            <p className="text-gray-500 text-sm">Please sign in to continue</p>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
       
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white p-6">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold mb-2">
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome back, {user.name}! 👋
           </h1>
-          <p className="text-blue-100">
+          <p className="text-gray-600">
             Discover amazing deals in {selectedCity || 'your city'}
           </p>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="p-4 max-w-md mx-auto">
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
             <div className="text-2xl font-bold text-blue-600">{filteredOffers.length}</div>
             <div className="text-sm text-gray-600">Active Deals</div>
@@ -194,90 +163,123 @@ export default function Home() {
             <div className="text-sm text-gray-600">Businesses</div>
           </div>
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-purple-600">{cities.length}</div>
-            <div className="text-sm text-gray-600">Cities</div>
+            <div className="text-2xl font-bold text-purple-600">{selectedCity}</div>
+            <div className="text-sm text-gray-600">Your City</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="text-2xl font-bold text-orange-600">{categories.length - 1}</div>
+            <div className="text-sm text-gray-600">Categories</div>
           </div>
         </div>
 
         {/* City Selection */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select City
-          </label>
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Choose a city</option>
-            {cities.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
+        <div className="mb-6">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Your City
+            </label>
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Choose a city</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {selectedCity && (
           <>
-            {/* Search */}
-            <div className="mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search deals..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <svg className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {categories.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Offers */}
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading deals...</p>
-              </div>
-            ) : filteredOffers.length > 0 ? (
-              <div className="space-y-4 pb-20">
-                {filteredOffers.map(offer => (
-                  <OfferCard key={offer.id} offer={offer} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🔍</span>
+            {/* Search and Filter */}
+            <div className="mb-6 space-y-4">
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Search Deals
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Search for deals, businesses..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Filter by Category
+                    </label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {categories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
-                <p className="text-gray-600">
-                  {searchTerm ? 'Try adjusting your search' : `No deals available in ${selectedCity} yet`}
-                </p>
               </div>
-            )}
+            </div>
+
+            {/* Offers Grid */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Available Deals in {selectedCity}
+                </h2>
+                <div className="text-sm text-gray-600">
+                  {filteredOffers.length} deals found
+                </div>
+              </div>
+
+              {filteredOffers.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredOffers.map((offer) => (
+                    <OfferCard key={offer.id} offer={offer} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🎯</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {searchTerm || selectedCategory !== 'all' 
+                      ? 'No deals match your search' 
+                      : `No deals available in ${selectedCity}`
+                    }
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {searchTerm || selectedCategory !== 'all'
+                      ? 'Try adjusting your search terms or filters'
+                      : 'Be the first to discover amazing deals when they become available!'
+                    }
+                  </p>
+                  {(searchTerm || selectedCategory !== 'all') && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('all');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }
