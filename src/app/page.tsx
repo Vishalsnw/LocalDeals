@@ -1,3 +1,7 @@
+` tags. I will ensure that no parts are skipped or omitted, and that the indentation and structure of the original code are preserved.
+
+```typescript
+<replit_final_file>
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -40,6 +44,11 @@ export default function Home() {
     'Sports & Fitness'
   ];
 
+  const cities = [
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata',
+    'Pune', 'Ahmedabad', 'Surat', 'Jaipur', 'Lucknow', 'Kanpur'
+  ];
+
   useEffect(() => {
     if (user?.city) {
       setSelectedCity(user.city);
@@ -53,22 +62,17 @@ export default function Home() {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-
-      // Start with basic query
       let q = query(
         collection(db, 'offers'),
         orderBy('createdAt', 'desc')
       );
 
-      // For complex filtering, we'll fetch all and filter in memory
-      // This is necessary because Firestore has limitations with compound queries
       const querySnapshot = await getDocs(q);
       let offersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Offer[];
 
-      // Apply filters in memory
       if (selectedCity) {
         offersData = offersData.filter(offer => 
           offer.location === selectedCity
@@ -114,159 +118,129 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Welcome to LocalDeal</h1>
-          <p className="text-gray-600 mb-6">Start discovering amazing local deals</p>
-          <a href="/login" className="btn-primary">
-            Get Started
-          </a>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-3xl">🛍️</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">LocalDeal</h1>
+            <p className="text-gray-600 mb-8">Discover amazing local deals in your city</p>
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-xl">💰</span>
+                </div>
+                <p className="text-sm text-gray-600">Save Money</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-xl">🏪</span>
+                </div>
+                <p className="text-sm text-gray-600">Local Business</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-xl">⚡</span>
+                </div>
+                <p className="text-sm text-gray-600">Instant Access</p>
+              </div>
+            </div>
+            <a href="/login" className="btn-primary w-full">
+              Get Started
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 mobile-app">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Hero Section */}
-        <div className="text-center mb-8 animate-fadeIn">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Discover Amazing Local Deals
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Find the best offers from businesses in your city
-          </p>
-
-          {/* Stats */}
-          <div className="flex justify-center space-x-8 mb-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{offers.length}</div>
-              <div className="text-sm text-gray-600">Active Deals</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">50+</div>
-              <div className="text-sm text-gray-600">Local Businesses</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">1000+</div>
-              <div className="text-sm text-gray-600">Happy Customers</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search and Filter Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 animate-slideInLeft">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-
-            {/* Search */}
-            <div className="lg:col-span-2">
+      {/* Header with Search */}
+      <div className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
                 <input
                   type="text"
-                  placeholder="Search deals, businesses, or categories..."
+                  placeholder="Search deals..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-
-            {/* Category Filter */}
-            <div className="lg:col-span-1">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🏷️</span>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="select-field pl-10"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* City Selection */}
-            <div className="lg:col-span-1">
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📍</span>
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    className="select-field pl-10"
-                  >
-                    <option value="">All Cities</option>
-                    {availableCities.map(city => (
-                      <option key={city.id} value={city.name}>
-                        {city.name}, {city.state} {city.isCustom && '(Custom)'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  onClick={() => setShowAddCity(true)}
-                  className="btn-secondary px-3"
-                  title="Add custom city"
-                >
-                  ➕
-                </button>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Active Filters */}
-          {(selectedCategory || selectedCity) && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {selectedCategory && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                  🏷️ {selectedCategory}
-                  <button
-                    onClick={() => setSelectedCategory('')}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-              {selectedCity && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                  📍 {selectedCity}
-                  <button
-                    onClick={() => setSelectedCity('')}
-                    className="ml-2 text-green-600 hover:text-green-800"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Filter Chips */}
+        <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+          <select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Cities</option>
+            {cities.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="text-2xl font-bold text-blue-600">{offers.length}</div>
+            <div className="text-sm text-gray-600">Active Deals</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="text-2xl font-bold text-green-600">50+</div>
+            <div className="text-sm text-gray-600">Businesses</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="text-2xl font-bold text-purple-600">1000+</div>
+            <div className="text-sm text-gray-600">Users</div>
+          </div>
         </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading amazing deals...</p>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         )}
 
         {/* Offers Grid */}
         {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slideInRight">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredOffers.length > 0 ? (
               filteredOffers.map((offer) => (
                 <OfferCard key={offer.id} offer={offer} />
               ))
             ) : (
-              <div className="col-span-full text-center py-12">
+              <div className="col-span-full bg-white rounded-lg p-12 text-center shadow-sm">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No deals found</h3>
                 <p className="text-gray-600">
@@ -279,7 +253,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
       {/* Add Custom City Modal */}
       {showAddCity && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

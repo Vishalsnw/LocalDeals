@@ -28,11 +28,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setUser(userDoc.data() as User);
-        } else {
-          setUser(null);
+        try {
+          // Try to get user data from Firestore first
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as User;
+            setUser(userData);
+            // Also save to localStorage for quick access
+            localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+          } else {
+            // If no Firestore data, try to get from localStorage
+            const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
+            if (savedUser) {
+              const userData = JSON.parse(savedUser) as User;
+              setUser(userData);
+              // Restore to Firestore
+              await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+            } else {
+              setUser(null);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          // Fallback to localStorage
+          const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
+          if (savedUser) {
+            setUser(JSON.parse(savedUser) as User);
+          } else {
+            setUser(null);
+          }
         }
       } else {
         setUser(null);
@@ -49,6 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (firebaseUser) {
+      // Clear localStorage for this user
+      localStorage.removeItem(`user_${firebaseUser.uid}`);
+    }
     await signOut(auth);
   };
 
@@ -63,8 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       city,
     };
 
-    await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-    setUser(userData);
+    try {
+      // Save to Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      setUser(userData);
+      
+      // Also save to localStorage as backup
+      localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      // If Firestore fails, at least save to localStorage
+      localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+      setUser(userData);
+    }
   };
 
   return (
