@@ -28,8 +28,26 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
+      // User has complete profile, redirect to home
       router.push('/');
     } else if (firebaseUser && !user) {
+      // User is authenticated but no profile data found
+      // Check if we have any saved data in localStorage
+      const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
+      if (savedUser) {
+        // We have saved data, try to restore it
+        try {
+          const userData = JSON.parse(savedUser) as any;
+          if (userData.role && userData.city) {
+            // Complete profile exists, no need to show role selection
+            router.push('/');
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing saved user data:', error);
+        }
+      }
+      // No complete profile found, show role selection
       setShowRoleSelection(true);
     }
   }, [user, firebaseUser, router]);

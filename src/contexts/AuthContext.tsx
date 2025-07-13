@@ -29,28 +29,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (firebaseUser) {
         try {
-          // Try to get user data from Firestore first
+          // First check localStorage for immediate loading
+          const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
+          if (savedUser) {
+            const userData = JSON.parse(savedUser) as User;
+            setUser(userData);
+          }
+
+          // Then try to get user data from Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data() as User;
             setUser(userData);
-            // Also save to localStorage for quick access
+            // Update localStorage with latest data
             localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+          } else if (savedUser) {
+            // If no Firestore data but we have localStorage data, restore to Firestore
+            const userData = JSON.parse(savedUser) as User;
+            await setDoc(doc(db, 'users', firebaseUser.uid), userData);
           } else {
-            // If no Firestore data, try to get from localStorage
-            const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
-            if (savedUser) {
-              const userData = JSON.parse(savedUser) as User;
-              setUser(userData);
-              // Restore to Firestore
-              await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-            } else {
-              setUser(null);
-            }
+            // No data found anywhere, user needs to complete profile
+            setUser(null);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
-          // Fallback to localStorage
+          // Fallback to localStorage only
           const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
           if (savedUser) {
             setUser(JSON.parse(savedUser) as User);

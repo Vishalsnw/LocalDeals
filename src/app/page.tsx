@@ -1,7 +1,3 @@
-` tags. I will ensure that no parts are skipped or omitted, and that the indentation and structure of the original code are preserved.
-
-```typescript
-<replit_final_file>
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -53,10 +49,18 @@ export default function Home() {
     if (user?.city) {
       setSelectedCity(user.city);
     }
+
+    // Persist selected city in local storage
+    const storedCity = localStorage.getItem('selectedCity');
+    if (storedCity) {
+      setSelectedCity(storedCity);
+    }
   }, [user]);
 
   useEffect(() => {
     fetchOffers();
+    // Persist selected city in local storage
+    localStorage.setItem('selectedCity', selectedCity);
   }, [selectedCity, selectedCategory]);
 
   const fetchOffers = async () => {
