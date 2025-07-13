@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
@@ -36,19 +36,17 @@ export default function Navbar() {
                       <Link
                         href="/owner/dashboard"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowDropdown(false)}
                       >
                         Dashboard
                       </Link>
                     )}
-                    <button
-                      onClick={() => {
-                        logout();
-                        setShowDropdown(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Logout
-                    </button>
+                    <div className="px-4 py-2 text-sm text-gray-500 border-t">
+                      Role: {user.role === 'owner' ? 'Business Owner' : 'Customer'}
+                    </div>
+                    <div className="px-4 py-2 text-sm text-gray-500">
+                      City: {user.city}
+                    </div>
                   </div>
                 )}
               </div>
