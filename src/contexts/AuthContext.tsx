@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { User as FirebaseUser, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User } from '@/types';
@@ -11,9 +11,9 @@ interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInAnonymously: () => Promise<void>;
   logout: () => Promise<void>;
-  updateUserRole: (role: 'user' | 'owner', city: string) => Promise<void>;
+  updateUserRole: (role: 'user' | 'owner', city: string, name?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,22 +44,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+  const signInAnonymously = async () => {
+    await signInAnonymously(auth);
   };
 
   const logout = async () => {
     await signOut(auth);
   };
 
-  const updateUserRole = async (role: 'user' | 'owner', city: string) => {
+  const updateUserRole = async (role: 'user' | 'owner', city: string, name?: string) => {
     if (!firebaseUser) return;
 
     const userData: User = {
       userId: firebaseUser.uid,
-      name: firebaseUser.displayName || '',
-      email: firebaseUser.email || '',
+      name: name || `User ${firebaseUser.uid.slice(-6)}`,
+      email: `anonymous-${firebaseUser.uid}@local.app`,
       role,
       city,
     };
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       firebaseUser,
       loading,
-      signInWithGoogle,
+      signInAnonymously,
       logout,
       updateUserRole,
     }}>

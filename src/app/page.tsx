@@ -117,9 +117,9 @@ export default function Home() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Welcome to LocalDeal</h1>
-          <p className="text-gray-600 mb-6">Please sign in to continue</p>
+          <p className="text-gray-600 mb-6">Start discovering amazing local deals</p>
           <a href="/login" className="btn-primary">
-            Sign In
+            Get Started
           </a>
         </div>
       </div>
