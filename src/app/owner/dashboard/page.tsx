@@ -141,7 +141,7 @@ export default function OwnerDashboard() {
 
       if (business?.id) {
         await updateDoc(doc(db, 'businesses', business.id), businessData);
-        setBusiness({ ...businessData, id: business.id });
+        setBusiness({ ...businessData, id: business.id, createdAt: business.createdAt });
       } else {
         const docRef = await addDoc(collection(db, 'businesses'), {
           ...businessData,
