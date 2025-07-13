@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { Business, Offer } from '@/types';
 import Navbar from '@/components/Navbar';
+import BottomNav from '@/components/BottomNav';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
