@@ -168,13 +168,6 @@ export default function OwnerDashboard() {
     try {
       setUploading(true);
 
-      let imageUrl = '';
-      if (offerForm.imageFile) {
-        const imageRef = ref(storage, `offers/${Date.now()}_${offerForm.imageFile.name}`);
-        const snapshot = await uploadBytes(imageRef, offerForm.imageFile);
-        imageUrl = await getDownloadURL(snapshot.ref);
-      }
-
       const discount = Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100);
 
       const offerData = {
@@ -188,19 +181,35 @@ export default function OwnerDashboard() {
         businessId: business.id,
         businessName: business.name,
         location: business.location || user.city,
-        imageUrl: imageUrl || '',
+        imageUrl: '',
         ownerId: user.userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         expiryDate: offerForm.validUntil
       };
 
+      // First create/update the offer document
+      let offerId: string;
       if (editingOffer?.id) {
         await updateDoc(doc(db, 'offers', editingOffer.id), offerData);
+        offerId = editingOffer.id;
       } else {
-        await addDoc(collection(db, 'offers'), {
+        const docRef = await addDoc(collection(db, 'offers'), {
           ...offerData,
           createdAt: new Date().toISOString()
+        });
+        offerId = docRef.id;
+      }
+
+      // Then upload image if provided
+      if (offerForm.imageFile) {
+        const imageRef = ref(storage, `offers/${offerId}/${Date.now()}_${offerForm.imageFile.name}`);
+        const snapshot = await uploadBytes(imageRef, offerForm.imageFile);
+        const imageUrl = await getDownloadURL(snapshot.ref);
+        
+        // Update the offer with image URL
+        await updateDoc(doc(db, 'offers', offerId), {
+          imageUrl: imageUrl
         });
       }
 

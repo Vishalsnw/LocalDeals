@@ -8,7 +8,7 @@ service firebase.storage {
     match /offers/{offerId}/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null && 
-        request.auth.uid == firestore.get(/databases/(default)/documents/businesses/$(firestore.get(/databases/(default)/documents/offers/$(offerId)).data.businessId)).data.ownerId;
+        request.auth.uid == firestore.get(/databases/(default)/documents/offers/$(offerId)).data.ownerId;
     }
 
     // Business profile images
