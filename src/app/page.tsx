@@ -11,7 +11,7 @@ import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
 
 export default function HomePage() {
-  const { user, authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -42,21 +42,37 @@ export default function HomePage() {
   ];
 
   const fetchOffers = async () => {
-    if (!selectedCity) return;
+    if (!selectedCity || !user) return;
     
     setLoading(true);
     try {
-      // Fetch offers for the selected city
+      console.log('Fetching offers for city:', selectedCity);
+      
+      // First, try to fetch all offers without city filter to see if there are any
+      const allOffersQuery = query(
+        collection(db, 'offers'),
+        orderBy('createdAt', 'desc')
+      );
+      const allOffersSnapshot = await getDocs(allOffersQuery);
+      console.log('Total offers in database:', allOffersSnapshot.docs.length);
+      
+      // Then fetch offers for the selected city
       const offersQuery = query(
         collection(db, 'offers'),
         where('location', '==', selectedCity),
         orderBy('createdAt', 'desc')
       );
       const offersSnapshot = await getDocs(offersQuery);
-      const offersData = offersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Offer));
+      console.log('Offers for', selectedCity, ':', offersSnapshot.docs.length);
+      
+      const offersData = offersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Offer data:', data);
+        return {
+          id: doc.id,
+          ...data
+        } as Offer;
+      });
 
       // Fetch businesses for the selected city
       const businessesQuery = query(
@@ -71,6 +87,7 @@ export default function HomePage() {
 
       setOffers(offersData);
       setBusinesses(businessesData);
+      console.log('Set offers:', offersData.length, 'businesses:', businessesData.length);
     } catch (error) {
       console.error('Error fetching offers:', error);
     } finally {
@@ -100,11 +117,11 @@ export default function HomePage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (selectedCity) {
+    if (selectedCity && user) {
       fetchOffers();
       localStorage.setItem('selectedCity', selectedCity);
     }
-  }, [selectedCity, selectedCategory]);
+  }, [selectedCity, selectedCategory, user]);
 
   // Filter offers based on search and category
   const filteredOffers = offers.filter(offer => {
@@ -204,6 +221,13 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Debug Info */}
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                Debug: Selected city: {selectedCity}, Total offers: {offers.length}, Filtered offers: {filteredOffers.length}
+              </p>
+            </div>
+
             {/* Offers Grid */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-6">
@@ -215,7 +239,12 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {filteredOffers.length > 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="mt-2 text-gray-600">Loading deals...</p>
+                </div>
+              ) : filteredOffers.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredOffers.map((offer) => (
                     <OfferCard key={offer.id} offer={offer} />
@@ -242,11 +271,17 @@ export default function HomePage() {
                         setSearchTerm('');
                         setSelectedCategory('all');
                       }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors mr-4"
                     >
                       Clear Filters
                     </button>
                   )}
+                  <button
+                    onClick={() => fetchOffers()}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition-colors"
+                  >
+                    Refresh Deals
+                  </button>
                 </div>
               )}
             </div>
