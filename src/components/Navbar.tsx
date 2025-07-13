@@ -25,7 +25,7 @@ export default function Navbar() {
                   className="flex items-center space-x-2 text-gray-700 hover:text-gray-900"
                 >
                   <span className="text-sm font-medium">
-                    {user.displayName || user.email}
+                    {user.name || user.email}
                   </span>
                   <span className="text-gray-400">▼</span>
                 </button>
