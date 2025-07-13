@@ -1,51 +1,58 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Offer } from '@/types';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Offer, Business } from '@/types';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [showAddCity, setShowAddCity] = useState(false);
-  const [newCityName, setNewCityName] = useState('');
-  const [newCityState, setNewCityState] = useState('');
-  const [availableCities, setAvailableCities] = useState([
-    { id: '1', name: 'Mumbai', state: 'Maharashtra', isCustom: false },
-    { id: '2', name: 'Delhi', state: 'Delhi', isCustom: false },
-    { id: '3', name: 'Bangalore', state: 'Karnataka', isCustom: false },
-    { id: '4', name: 'Hyderabad', state: 'Telangana', isCustom: false },
-    { id: '5', name: 'Chennai', state: 'Tamil Nadu', isCustom: false },
-    { id: '6', name: 'Kolkata', state: 'West Bengal', isCustom: false },
-  ]);
-
-  const categories = [
-    'Food & Dining',
-    'Shopping',
-    'Entertainment',
-    'Health & Beauty',
-    'Services',
-    'Travel',
-    'Electronics',
-    'Fashion',
-    'Home & Garden',
-    'Sports & Fitness'
-  ];
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   const cities = [
-    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata',
-    'Pune', 'Ahmedabad', 'Surat', 'Jaipur', 'Lucknow', 'Kanpur'
+    'Mumbai',
+    'Delhi', 
+    'Bangalore',
+    'Hyderabad',
+    'Chennai',
+    'Kolkata',
+    'Pune',
+    'Jaipur',
+    'Lucknow',
+    'Kanpur'
+  ];
+
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'food', label: '🍔 Food & Dining' },
+    { value: 'fashion', label: '👗 Fashion' },
+    { value: 'electronics', label: '📱 Electronics' },
+    { value: 'beauty', label: '💄 Beauty' },
+    { value: 'health', label: '💊 Health' },
+    { value: 'entertainment', label: '🎬 Entertainment' },
+    { value: 'services', label: '🔧 Services' },
+    { value: 'other', label: '📦 Other' }
   ];
 
   useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     if (user?.city) {
       setSelectedCity(user.city);
     }
@@ -55,70 +62,75 @@ export default function Home() {
     if (storedCity) {
       setSelectedCity(storedCity);
     }
-  }, [user]);
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     fetchOffers();
     // Persist selected city in local storage
-    localStorage.setItem('selectedCity', selectedCity);
+    if (selectedCity) {
+      localStorage.setItem('selectedCity', selectedCity);
+    }
   }, [selectedCity, selectedCategory]);
 
   const fetchOffers = async () => {
+    if (!selectedCity) return;
+    
+    setLoading(true);
     try {
-      setLoading(true);
-      let q = query(
+      // Fetch offers
+      let offersQuery = query(
         collection(db, 'offers'),
+        where('isActive', '==', true),
+        where('city', '==', selectedCity),
         orderBy('createdAt', 'desc')
       );
 
-      const querySnapshot = await getDocs(q);
-      let offersData = querySnapshot.docs.map(doc => ({
+      if (selectedCategory !== 'all') {
+        offersQuery = query(
+          collection(db, 'offers'),
+          where('isActive', '==', true),
+          where('city', '==', selectedCity),
+          where('category', '==', selectedCategory),
+          orderBy('createdAt', 'desc')
+        );
+      }
+
+      const offersSnapshot = await getDocs(offersQuery);
+      const offersData = offersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Offer[];
 
-      if (selectedCity) {
-        offersData = offersData.filter(offer => 
-          offer.location === selectedCity
-        );
-      }
-
-      if (selectedCategory) {
-        offersData = offersData.filter(offer => 
-          offer.category === selectedCategory
-        );
-      }
+      // Fetch businesses
+      const businessesSnapshot = await getDocs(
+        query(collection(db, 'businesses'), where('city', '==', selectedCity))
+      );
+      const businessesData = businessesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Business[];
 
       setOffers(offersData);
+      setBusinesses(businessesData);
     } catch (error) {
       console.error('Error fetching offers:', error);
-      setOffers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const addCustomCity = () => {
-    if (newCityName.trim() && newCityState.trim()) {
-      const newCity = {
-        id: Date.now().toString(),
-        name: newCityName.trim(),
-        state: newCityState.trim(),
-        isCustom: true
-      };
-      setAvailableCities([...availableCities, newCity]);
-      setSelectedCity(newCity.name);
-      setNewCityName('');
-      setNewCityState('');
-      setShowAddCity(false);
-    }
-  };
-
   const filteredOffers = offers.filter(offer =>
     offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (offer.businessName && offer.businessName.toLowerCase().includes(searchTerm.toLowerCase()))
+    offer.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -145,14 +157,17 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">⚡</span>
+                  <span className="text-xl">🚀</span>
                 </div>
-                <p className="text-sm text-gray-600">Instant Access</p>
+                <p className="text-sm text-gray-600">Quick Deals</p>
               </div>
             </div>
-            <a href="/login" className="btn-primary w-full">
+            <button
+              onClick={() => router.push('/login')}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+            >
               Get Started
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -187,15 +202,26 @@ export default function Home() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Filter Chips */}
-        <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Welcome back, {user.name}! 👋
+          </h1>
+          <p className="text-gray-600">
+            Discover amazing deals in {selectedCity}
+          </p>
+        </div>
+
+        {/* City & Category Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Cities</option>
+            <option value="">Select City</option>
             {cities.map(city => (
               <option key={city} value={city}>{city}</option>
             ))}
@@ -204,11 +230,12 @@ export default function Home() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Categories</option>
             {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
             ))}
           </select>
         </div>
@@ -236,75 +263,38 @@ export default function Home() {
           </div>
         )}
 
-        {/* Offers Grid */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOffers.length > 0 ? (
-              filteredOffers.map((offer) => (
-                <OfferCard key={offer.id} offer={offer} />
-              ))
-            ) : (
-              <div className="col-span-full bg-white rounded-lg p-12 text-center shadow-sm">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No deals found</h3>
-                <p className="text-gray-600">
-                  {searchTerm || selectedCategory || selectedCity
-                    ? 'Try adjusting your search criteria'
-                    : 'Check back later for new deals!'}
-                </p>
-              </div>
-            )}
+        {/* No City Selected */}
+        {!selectedCity && !loading && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🏙️</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Select a City</h3>
+            <p className="text-gray-600">Choose your city to see available deals</p>
           </div>
         )}
-      </main>
-      {/* Add Custom City Modal */}
-      {showAddCity && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Add Custom City</h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City Name</label>
-                <input
-                  type="text"
-                  value={newCityName}
-                  onChange={(e) => setNewCityName(e.target.value)}
-                  className="input-field"
-                  placeholder="Enter city name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <input
-                  type="text"
-                  value={newCityState}
-                  onChange={(e) => setNewCityState(e.target.value)}
-                  className="input-field"
-                  placeholder="Enter state name"
-                />
-              </div>
-            </div>
-
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={() => setShowAddCity(false)}
-                className="btn-secondary flex-1"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addCustomCity}
-                disabled={!newCityName.trim() || !newCityState.trim()}
-                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Add City
-              </button>
-            </div>
+        {/* No Offers */}
+        {selectedCity && !loading && filteredOffers.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
+            <p className="text-gray-600">
+              {searchTerm 
+                ? `No deals match "${searchTerm}" in ${selectedCity}`
+                : `No deals available in ${selectedCity} for ${categories.find(c => c.value === selectedCategory)?.label}`
+              }
+            </p>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Offers Grid */}
+        {selectedCity && !loading && filteredOffers.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredOffers.map(offer => (
+              <OfferCard key={offer.id} offer={offer} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
