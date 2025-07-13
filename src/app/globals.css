@@ -123,4 +123,24 @@
     background-color: #0056b3;
     transform: translateY(-2px);
   }
+
+  .call-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .call-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+  }
 }

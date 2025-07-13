@@ -33,15 +33,15 @@ export interface Offer {
   originalPrice: number;
   discountedPrice: number;
   discount?: number;
-  validUntil: string;
   category: string;
   location: string;
-  imageUrl?: string;
-  whatsappNumber?: string;
-  businessId: string;
-  businessName?: string; // Added line for business name
-  createdAt: string;
+  validUntil: string;
   expiryDate?: string;
+  imageUrl?: string;
+  businessId: string;
+  whatsappNumber?: string;
+  phoneNumber?: string;
+  createdAt: string;
 }
 
 export interface City {
