@@ -180,11 +180,11 @@ export default function OwnerDashboard() {
         discount: Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100),
         validUntil: offerForm.validUntil,
         category: offerForm.category,
-        whatsappNumber: business.whatsappNumber || '',
+        location: business.location || user.city,
         businessId: business.id,
         businessName: business.name,
-        location: business.location || user.city,
-        imageUrl: '',
+        whatsappNumber: business.whatsappNumber || '',
+        phoneNumber: business.phone || '',
         ownerId: user.userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -194,7 +194,18 @@ export default function OwnerDashboard() {
       // First create/update the offer document
       let offerId: string;
       if (editingOffer?.id) {
-        await updateDoc(doc(db, 'offers', editingOffer.id), offerData);
+        await updateDoc(doc(db, 'offers', editingOffer.id), {
+          title: offerForm.title,
+          description: offerForm.description,
+          originalPrice: offerForm.originalPrice,
+          discountedPrice: offerForm.discountedPrice,
+          discount: Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100),
+          validUntil: offerForm.validUntil,
+          category: offerForm.category,
+          location: business.location || user.city,
+          whatsappNumber: business.whatsappNumber || '',
+          phoneNumber: business.phone || ''
+        });
         offerId = editingOffer.id;
       } else {
         const docRef = await addDoc(collection(db, 'offers'), {
