@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signInAnonymously = async () => {
+  const signInAnonymouslyHandler = async () => {
     await signInAnonymously(auth);
   };
 
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       firebaseUser,
       loading,
-      signInAnonymously,
+      signInAnonymously: signInAnonymouslyHandler,
       logout,
       updateUserRole,
     }}>
