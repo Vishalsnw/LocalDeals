@@ -147,7 +147,7 @@ export default function OwnerDashboard() {
           ...businessData,
           createdAt: new Date().toISOString()
         });
-        setBusiness({ ...businessData, id: docRef.id });
+        setBusiness({ ...businessData, id: docRef.id, createdAt: new Date().toISOString() });
       }
 
       setShowBusinessForm(false);
