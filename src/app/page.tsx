@@ -4,33 +4,28 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Offer, Business } from '@/types';
 import Navbar from '@/components/Navbar';
 import OfferCard from '@/components/OfferCard';
 
-export default function Home() {
-  const { user, loading: authLoading } = useAuth();
+export default function HomePage() {
+  const { user, authLoading } = useAuth();
+  const router = useRouter();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCity, setSelectedCity] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const cities = [
-    'Mumbai',
-    'Delhi', 
-    'Bangalore',
-    'Hyderabad',
-    'Chennai',
-    'Kolkata',
-    'Pune',
-    'Jaipur',
-    'Lucknow',
-    'Kanpur'
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 
+    'Pune', 'Ahmedabad', 'Jaipur', 'Surat', 'Lucknow', 'Kanpur',
+    'Nagpur', 'Visakhapatnam', 'Indore', 'Thane', 'Bhopal', 'Patna',
+    'Vadodara', 'Ghaziabad', 'Ludhiana', 'Agra', 'Nashik', 'Faridabad',
+    'Meerut', 'Rajkot', 'Kalyan-Dombivali', 'Vasai-Virar', 'Varanasi', 'Srinagar'
   ];
 
   const categories = [
@@ -122,7 +117,7 @@ export default function Home() {
     return matchesSearch && matchesCategory;
   });
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -140,41 +135,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 mobile-app">
       <Navbar />
-      
-      <main className="max-w-7xl mx-auto px-4 py-6">
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.name}! 👋
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to LocalDeal
           </h1>
-          <p className="text-gray-600">
-            Discover amazing deals in {selectedCity || 'your city'}
+          <p className="text-xl text-gray-600 mb-6">
+            Discover amazing deals from local businesses in your city
           </p>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-blue-600">{filteredOffers.length}</div>
-            <div className="text-sm text-gray-600">Active Deals</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-green-600">{businesses.length}</div>
-            <div className="text-sm text-gray-600">Businesses</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-purple-600">{selectedCity}</div>
-            <div className="text-sm text-gray-600">Your City</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-orange-600">{categories.length - 1}</div>
-            <div className="text-sm text-gray-600">Categories</div>
-          </div>
-        </div>
-
-        {/* City Selection */}
-        <div className="mb-6">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          {/* City Selection */}
+          <div className="max-w-md mx-auto">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Your City
             </label>
@@ -183,7 +156,7 @@ export default function Home() {
               onChange={(e) => setSelectedCity(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">Choose a city</option>
+              <option value="">Choose a city...</option>
               {cities.map((city) => (
                 <option key={city} value={city}>
                   {city}
@@ -276,6 +249,33 @@ export default function Home() {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {user.role === 'owner' && (
+                  <button
+                    onClick={() => router.push('/owner/dashboard')}
+                    className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-2xl mb-2">📊</div>
+                    <div className="font-medium">Business Dashboard</div>
+                    <div className="text-sm text-gray-600">Manage your business and offers</div>
+                  </button>
+                )}
+                <button
+                  onClick={() => fetchOffers()}
+                  className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="text-2xl mb-2">🔄</div>
+                  <div className="font-medium">Refresh Deals</div>
+                  <div className="text-sm text-gray-600">Get the latest offers</div>
+                </button>
+              </div>
             </div>
           </>
         )}
