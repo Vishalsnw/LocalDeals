@@ -53,21 +53,20 @@ export default function Home() {
       return;
     }
 
+    // Set city from user profile or localStorage
     if (user?.city) {
       setSelectedCity(user.city);
-    }
-
-    // Persist selected city in local storage
-    const storedCity = localStorage.getItem('selectedCity');
-    if (storedCity) {
-      setSelectedCity(storedCity);
+    } else {
+      const storedCity = localStorage.getItem('selectedCity');
+      if (storedCity) {
+        setSelectedCity(storedCity);
+      }
     }
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    fetchOffers();
-    // Persist selected city in local storage
     if (selectedCity) {
+      fetchOffers();
       localStorage.setItem('selectedCity', selectedCity);
     }
   }, [selectedCity, selectedCategory]);
@@ -210,7 +209,7 @@ export default function Home() {
             Welcome back, {user.name}! 👋
           </h1>
           <p className="text-gray-600">
-            Discover amazing deals in {selectedCity}
+            Discover amazing deals in {selectedCity || 'your city'}
           </p>
         </div>
 
@@ -247,7 +246,7 @@ export default function Home() {
             <div className="text-sm text-gray-600">Active Deals</div>
           </div>
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-green-600">50+</div>
+            <div className="text-2xl font-bold text-green-600">{businesses.length}</div>
             <div className="text-sm text-gray-600">Businesses</div>
           </div>
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
