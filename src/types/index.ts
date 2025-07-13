@@ -39,6 +39,7 @@ export interface Offer {
   imageUrl?: string;
   whatsappNumber?: string;
   businessId: string;
+  businessName?: string; // Added line for business name
   createdAt: string;
   expiryDate?: string;
 }
