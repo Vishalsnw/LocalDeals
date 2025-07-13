@@ -782,6 +782,24 @@ body {
     background-color: #0056b3;
     transform: translateY(-2px);
   }
+.call-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+.call-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+  }
 .fixed{
   position: fixed;
 }
@@ -1308,48 +1326,60 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
 .hover\:bg-gray-100:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
+
 .hover\:bg-red-700:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));
 }
+
 .hover\:text-blue-800:hover{
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
 }
+
 .hover\:text-gray-900:hover{
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
+
 .hover\:text-green-800:hover{
   --tw-text-opacity: 1;
   color: rgb(22 101 52 / var(--tw-text-opacity, 1));
 }
+
 .hover\:underline:hover{
   text-decoration-line: underline;
 }
+
 .focus\:outline-none:focus{
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
+
 .focus\:ring-2:focus{
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
+
 .focus\:ring-blue-500:focus{
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity, 1));
 }
+
 .disabled\:cursor-not-allowed:disabled{
   cursor: not-allowed;
 }
+
 .disabled\:opacity-50:disabled{
   opacity: 0.5;
 }
+
 @media (min-width: 640px){
 
   .sm\:px-6{
@@ -1357,6 +1387,7 @@ body {
     padding-right: 1.5rem;
   }
 }
+
 @media (min-width: 768px){
 
   .md\:grid-cols-2{
@@ -1372,6 +1403,7 @@ body {
     line-height: 2.5rem;
   }
 }
+
 @media (min-width: 1024px){
 
   .lg\:col-span-1{
