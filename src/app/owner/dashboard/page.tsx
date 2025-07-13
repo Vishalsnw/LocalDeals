@@ -26,6 +26,7 @@ export default function OwnerDashboard() {
     address: '',
     website: '',
     whatsappLink: '',
+    whatsappNumber: '',
     category: ''
   });
 
@@ -100,6 +101,7 @@ export default function OwnerDashboard() {
           address: businessData.address || '',
           website: businessData.website || '',
           whatsappLink: businessData.whatsappLink || '',
+          whatsappNumber: businessData.whatsappNumber || '',
           category: businessData.category || ''
         });
       } else {
@@ -178,6 +180,7 @@ export default function OwnerDashboard() {
         discount: Math.round(((offerForm.originalPrice - offerForm.discountedPrice) / offerForm.originalPrice) * 100),
         validUntil: offerForm.validUntil,
         category: offerForm.category,
+        whatsappNumber: business.whatsappNumber || '',
         businessId: business.id,
         businessName: business.name,
         location: business.location || user.city,
@@ -206,7 +209,7 @@ export default function OwnerDashboard() {
         const imageRef = ref(storage, `offers/${offerId}/${Date.now()}_${offerForm.imageFile.name}`);
         const snapshot = await uploadBytes(imageRef, offerForm.imageFile);
         const imageUrl = await getDownloadURL(snapshot.ref);
-        
+
         // Update the offer with image URL
         await updateDoc(doc(db, 'offers', offerId), {
           imageUrl: imageUrl
