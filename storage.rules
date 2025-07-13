@@ -3,23 +3,24 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Images for offers - only business owners can upload, everyone can read
+    
+    // Offer images
     match /offers/{offerId}/{allPaths=**} {
-      allow read: if true; // Public read access for offer images
+      allow read: if true;
       allow write: if request.auth != null && 
         request.auth.uid == firestore.get(/databases/(default)/documents/businesses/$(firestore.get(/databases/(default)/documents/offers/$(offerId)).data.businessId)).data.ownerId;
     }
-    
-    // Business profile images - only business owners can upload
+
+    // Business profile images
     match /businesses/{businessId}/{allPaths=**} {
-      allow read: if true; // Public read access for business images
+      allow read: if true;
       allow write: if request.auth != null && 
         request.auth.uid == firestore.get(/databases/(default)/documents/businesses/$(businessId)).data.ownerId;
     }
-    
-    // User profile images - users can only upload their own images
+
+    // User profile images (optional)
     match /users/{userId}/{allPaths=**} {
-      allow read: if true; // Public read access for user profile images
+      allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
