@@ -12,7 +12,6 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   signInAnonymously: () => Promise<void>;
-  logout: () => Promise<void>;
   updateUserRole: (role: 'user' | 'owner', city: string, name?: string) => Promise<void>;
 }
 
@@ -96,13 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInAnonymously(auth);
   };
 
-  const logout = async () => {
-    if (firebaseUser) {
-      // Clear localStorage for this user
-      localStorage.removeItem(`user_${firebaseUser.uid}`);
-    }
-    await signOut(auth);
-  };
+  
 
   const updateUserRole = async (role: 'user' | 'owner', city: string, name?: string) => {
     if (!firebaseUser) {
@@ -146,7 +139,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       firebaseUser,
       loading,
       signInAnonymously: signInAnonymouslyHandler,
-      logout,
       updateUserRole,
     }}>
       {children}

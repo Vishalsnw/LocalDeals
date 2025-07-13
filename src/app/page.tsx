@@ -42,12 +42,51 @@ export default function Home() {
     { value: 'health', label: '💊 Health' },
     { value: 'entertainment', label: '🎬 Entertainment' },
     { value: 'services', label: '🔧 Services' },
-    { value: 'other', label: '📦 Other' }
+    { value: 'other', label: '🎯 Other' },
   ];
 
-  useEffect(() => {
-    if (authLoading) return;
+  const fetchOffers = async () => {
+    if (!selectedCity) return;
     
+    setLoading(true);
+    try {
+      // Fetch offers for the selected city
+      const offersQuery = query(
+        collection(db, 'offers'),
+        where('city', '==', selectedCity),
+        orderBy('createdAt', 'desc')
+      );
+      const offersSnapshot = await getDocs(offersQuery);
+      const offersData = offersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Offer));
+
+      // Fetch businesses for the selected city
+      const businessesQuery = query(
+        collection(db, 'businesses'),
+        where('city', '==', selectedCity)
+      );
+      const businessesSnapshot = await getDocs(businessesQuery);
+      const businessesData = businessesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Business));
+
+      setOffers(offersData);
+      setBusinesses(businessesData);
+    } catch (error) {
+      console.error('Error fetching offers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
       router.push('/login');
       return;
@@ -71,62 +110,21 @@ export default function Home() {
     }
   }, [selectedCity, selectedCategory]);
 
-  const fetchOffers = async () => {
-    if (!selectedCity) return;
-    
-    setLoading(true);
-    try {
-      // Fetch offers
-      let offersQuery = query(
-        collection(db, 'offers'),
-        where('isActive', '==', true),
-        where('city', '==', selectedCity),
-        orderBy('createdAt', 'desc')
-      );
-
-      if (selectedCategory !== 'all') {
-        offersQuery = query(
-          collection(db, 'offers'),
-          where('isActive', '==', true),
-          where('city', '==', selectedCity),
-          where('category', '==', selectedCategory),
-          orderBy('createdAt', 'desc')
-        );
-      }
-
-      const offersSnapshot = await getDocs(offersQuery);
-      const offersData = offersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Offer[];
-
-      // Fetch businesses
-      const businessesSnapshot = await getDocs(
-        query(collection(db, 'businesses'), where('city', '==', selectedCity))
-      );
-      const businessesData = businessesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Business[];
-
-      setOffers(offersData);
-      setBusinesses(businessesData);
-    } catch (error) {
-      console.error('Error fetching offers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredOffers = offers.filter(offer =>
-    offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOffers = offers.filter(offer => {
+    const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
+    const matchesSearch = searchTerm === '' || 
+      offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      offer.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h1 className="text-xl font-medium text-gray-800">Loading...</h1>
+        </div>
       </div>
     );
   }
@@ -156,17 +154,12 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl">🚀</span>
+                  <span className="text-xl">🎯</span>
                 </div>
-                <p className="text-sm text-gray-600">Quick Deals</p>
+                <p className="text-sm text-gray-600">Best Deals</p>
               </div>
             </div>
-            <button
-              onClick={() => router.push('/login')}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
-            >
-              Get Started
-            </button>
+            <p className="text-gray-500 text-sm">Please sign in to continue</p>
           </div>
         </div>
       </div>
@@ -176,73 +169,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-
-      {/* Header with Search */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search deals..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+      
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white p-6">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-2xl font-bold mb-2">
             Welcome back, {user.name}! 👋
           </h1>
-          <p className="text-gray-600">
+          <p className="text-blue-100">
             Discover amazing deals in {selectedCity || 'your city'}
           </p>
         </div>
+      </div>
 
-        {/* City & Category Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select City</option>
-            {cities.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
-
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {categories.map(category => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+      {/* Stats Cards */}
+      <div className="p-4 max-w-md mx-auto">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-blue-600">{offers.length}</div>
+            <div className="text-2xl font-bold text-blue-600">{filteredOffers.length}</div>
             <div className="text-sm text-gray-600">Active Deals</div>
           </div>
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
@@ -250,48 +194,88 @@ export default function Home() {
             <div className="text-sm text-gray-600">Businesses</div>
           </div>
           <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-            <div className="text-2xl font-bold text-purple-600">1000+</div>
-            <div className="text-sm text-gray-600">Users</div>
+            <div className="text-2xl font-bold text-purple-600">{cities.length}</div>
+            <div className="text-sm text-gray-600">Cities</div>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        )}
-
-        {/* No City Selected */}
-        {!selectedCity && !loading && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏙️</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Select a City</h3>
-            <p className="text-gray-600">Choose your city to see available deals</p>
-          </div>
-        )}
-
-        {/* No Offers */}
-        {selectedCity && !loading && filteredOffers.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
-            <p className="text-gray-600">
-              {searchTerm 
-                ? `No deals match "${searchTerm}" in ${selectedCity}`
-                : `No deals available in ${selectedCity} for ${categories.find(c => c.value === selectedCategory)?.label}`
-              }
-            </p>
-          </div>
-        )}
-
-        {/* Offers Grid */}
-        {selectedCity && !loading && filteredOffers.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOffers.map(offer => (
-              <OfferCard key={offer.id} offer={offer} />
+        {/* City Selection */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select City
+          </label>
+          <select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Choose a city</option>
+            {cities.map(city => (
+              <option key={city} value={city}>{city}</option>
             ))}
-          </div>
+          </select>
+        </div>
+
+        {selectedCity && (
+          <>
+            {/* Search */}
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search deals..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <svg className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categories.map(category => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Offers */}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading deals...</p>
+              </div>
+            ) : filteredOffers.length > 0 ? (
+              <div className="space-y-4 pb-20">
+                {filteredOffers.map(offer => (
+                  <OfferCard key={offer.id} offer={offer} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🔍</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
+                <p className="text-gray-600">
+                  {searchTerm ? 'Try adjusting your search' : `No deals available in ${selectedCity} yet`}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
