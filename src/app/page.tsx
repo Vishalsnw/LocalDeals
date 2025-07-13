@@ -109,7 +109,7 @@ export default function Home() {
   const filteredOffers = offers.filter(offer =>
     offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.businessName.toLowerCase().includes(searchTerm.toLowerCase())
+    (offer.businessName && offer.businessName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (!user) {
