@@ -7,7 +7,7 @@ channel = "stable-24_05"
 run = ["sh", "-c", "npm run dev"]
 
 [workflows]
-runButton = "Dev Server"
+runButton = "Start Next.js App"
 
 [[workflows.workflow]]
 name = "Dev Server"
@@ -17,6 +17,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Start Next.js App"
+author = 45048866
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
