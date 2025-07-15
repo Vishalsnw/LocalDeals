@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
@@ -9,164 +10,246 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    font-size: 16px;
   }
 
   body {
-    background: #f5f5f5;
+    background: #f8fafc;
     min-height: 100vh;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input, textarea, select {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   .mobile-app, .android-app {
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-    width: 100%;
+    width: 100vw;
     min-height: 100vh;
     position: relative;
+    max-width: 100%;
+    background: #f8fafc;
   }
 
   .app-container {
     max-width: 100vw;
     min-height: 100vh;
     position: relative;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Mobile scroll optimization */
+  .scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }
 
 @layer components {
+  /* Mobile-first button styles */
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 ease-in-out touch-manipulation;
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg active:shadow-md transform active:scale-95 transition-all duration-150 touch-manipulation text-base min-h-[48px] flex items-center justify-center;
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 touch-manipulation;
+    @apply bg-white text-gray-700 font-medium py-4 px-6 rounded-xl border border-gray-200 shadow-sm active:shadow-none active:bg-gray-50 transition-all duration-150 touch-manipulation text-base min-h-[48px] flex items-center justify-center;
   }
 
   .btn-danger {
-    @apply bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 touch-manipulation;
+    @apply bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium py-4 px-6 rounded-xl shadow-md active:shadow-sm transform active:scale-95 transition-all duration-150 touch-manipulation text-base min-h-[48px] flex items-center justify-center;
   }
 
-  .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200;
+  .mobile-card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:shadow-md transition-shadow duration-200 touch-manipulation;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white min-h-[48px];
   }
 
   .select-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white;
+    @apply w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base min-h-[48px];
   }
 
   .textarea-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+    @apply w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base bg-white min-h-[120px];
   }
 
-  /* Android-style shadows */
-  .android-shadow {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  /* Mobile-optimized spacing */
+  .mobile-padding {
+    @apply px-4 py-3;
   }
 
-  .android-card {
-    @apply bg-white rounded-lg android-shadow border-0 hover:shadow-lg transition-shadow duration-200;
+  .mobile-margin {
+    @apply mx-4 my-3;
   }
 
-  /* Material Design button styles */
-  .material-button {
-    @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 touch-manipulation;
-    min-height: 36px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  /* Touch-optimized interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
 
-  .card-hover {
-    @apply transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-out;
+  .mobile-list-item {
+    @apply p-4 border-b border-gray-100 active:bg-gray-50 transition-colors duration-150 touch-manipulation;
   }
 
-  .glass-card {
-    @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-lg;
+  /* Mobile navigation */
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom;
   }
 
-  .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+  .mobile-header {
+    @apply sticky top-0 z-40 bg-white border-b border-gray-200 safe-area-inset-top;
   }
 
-  .floating-card {
-    @apply bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden;
+  /* Material Design inspired */
+  .material-card {
+    @apply bg-white rounded-2xl shadow-sm border-0 overflow-hidden active:shadow-md transition-shadow duration-200;
   }
 
+  .floating-action {
+    @apply fixed bottom-20 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full p-4 shadow-lg active:shadow-md transform active:scale-95 transition-all duration-200 z-40;
+  }
+
+  /* Status and badge styles */
   .offer-badge {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-md;
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm;
   }
 
   .category-badge {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700;
   }
 
   .city-badge {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
   }
 
+  /* Action buttons */
   .whatsapp-btn {
-    background-color: #25d366;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .whatsapp-btn:hover {
-    background-color: #128c7e;
-    transform: translateY(-2px);
+    @apply bg-green-500 text-white py-4 px-6 rounded-xl font-semibold active:bg-green-600 transition-colors duration-150 flex items-center justify-center gap-2 min-h-[48px] touch-manipulation;
   }
 
   .share-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .share-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+    @apply bg-blue-500 text-white py-4 px-6 rounded-xl font-semibold active:bg-blue-600 transition-colors duration-150 flex items-center justify-center gap-2 min-h-[48px] touch-manipulation;
   }
 
   .call-btn {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    @apply bg-emerald-500 text-white py-4 px-6 rounded-xl font-semibold active:bg-emerald-600 transition-colors duration-150 flex items-center justify-center gap-2 min-h-[48px] touch-manipulation;
   }
 
-  .call-btn:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
+  /* Loading states */
+  .loading-spinner {
+    @apply animate-spin rounded-full border-4 border-gray-200 border-t-blue-600;
   }
+
+  /* Safe area handling for mobile devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Mobile-first responsive text */
+  .text-mobile-lg {
+    @apply text-lg leading-6;
+  }
+
+  .text-mobile-xl {
+    @apply text-xl leading-7;
+  }
+
+  .text-mobile-2xl {
+    @apply text-2xl leading-8;
+  }
+
+  /* Form optimizations */
+  .mobile-form-group {
+    @apply mb-4;
+  }
+
+  .mobile-form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+
+  /* Grid optimizations for mobile */
+  .mobile-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  .mobile-grid-2 {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  /* Search and filter mobile styles */
+  .mobile-search {
+    @apply sticky top-0 z-30 bg-white p-4 border-b border-gray-200;
+  }
+
+  /* Card hover effects for mobile */
+  .mobile-card-interactive {
+    @apply active:bg-gray-50 active:scale-[0.98] transition-all duration-150;
+  }
+}
+
+/* Mobile-specific media queries */
+@media (max-width: 640px) {
+  .mobile-only {
+    display: block !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Ensure full width on mobile */
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Remove default mobile browser styling */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}
+
+/* Handle viewport units properly on mobile */
+.mobile-full-height {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+.mobile-min-height {
+  min-height: 100vh;
+  min-height: 100dvh;
 }

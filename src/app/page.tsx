@@ -49,7 +49,6 @@ export default function HomePage() {
     try {
       console.log('Fetching offers for city:', selectedCity);
       
-      // First, try to fetch all offers without city filter to see if there are any
       const allOffersQuery = query(
         collection(db, 'offers'),
         orderBy('createdAt', 'desc')
@@ -57,7 +56,6 @@ export default function HomePage() {
       const allOffersSnapshot = await getDocs(allOffersQuery);
       console.log('Total offers in database:', allOffersSnapshot.docs.length);
       
-      // Then fetch offers for the selected city
       const offersQuery = query(
         collection(db, 'offers'),
         where('location', '==', selectedCity),
@@ -75,7 +73,6 @@ export default function HomePage() {
         } as Offer;
       });
 
-      // Fetch businesses for the selected city
       const businessesQuery = query(
         collection(db, 'businesses'),
         where('location', '==', selectedCity)
@@ -114,7 +111,6 @@ export default function HomePage() {
       return;
     }
 
-    // Set city from user profile or localStorage
     if (user?.city) {
       setSelectedCity(user.city);
       setShowWelcome(true);
@@ -134,7 +130,6 @@ export default function HomePage() {
     }
   }, [selectedCity, selectedCategory, user]);
 
-  // Filter offers based on search and category
   const filteredOffers = offers.filter(offer => {
     const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,71 +142,64 @@ export default function HomePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
-          <p className="text-lg font-medium">Loading LocalDeal...</p>
+      <div className="mobile-full-height bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center android-app">
+        <div className="text-center text-white px-6">
+          <div className="loading-spinner h-12 w-12 mx-auto mb-6"></div>
+          <p className="text-mobile-lg font-medium">Loading LocalDeal...</p>
         </div>
       </div>
     );
   }
 
-  // Welcome/Landing screen for non-authenticated users
   if (!user || !showWelcome) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 text-white overflow-hidden relative">
-        {/* Animated background patterns */}
+      <div className="mobile-full-height bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 text-white overflow-hidden android-app">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-white opacity-5 rounded-full animate-spin"></div>
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-white opacity-10 rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white opacity-10 rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white opacity-5 rounded-full animate-spin"></div>
         </div>
 
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Header */}
-          <div className="flex-shrink-0 pt-16 px-6 text-center">
-            <div className="mb-8">
-              <div className="text-7xl mb-4 animate-bounce">🏪</div>
-              <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
+        <div className="relative z-10 mobile-full-height flex flex-col safe-top safe-bottom">
+          <div className="flex-1 flex flex-col justify-center px-6">
+            <div className="text-center mb-8">
+              <div className="text-6xl mb-6 animate-bounce">🏪</div>
+              <h1 className="text-4xl font-black mb-4 bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
                 LocalDeal
               </h1>
-              <p className="text-xl md:text-2xl font-light opacity-90 mb-2">
+              <p className="text-mobile-xl font-light opacity-90 mb-2">
                 Discover Amazing Local Deals
               </p>
               <p className="text-base opacity-75">
                 Connect with trusted businesses in your neighborhood
               </p>
             </div>
-          </div>
 
-          {/* Features */}
-          <div className="flex-1 px-6 py-8">
-            <div className="max-w-md mx-auto space-y-6">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">🎯</div>
-                <h3 className="text-xl font-bold mb-2">Local Deals</h3>
+            <div className="space-y-4 mb-8">
+              <div className="mobile-card bg-white/10 backdrop-blur-md border border-white/20 p-6">
+                <div className="text-3xl mb-3">🎯</div>
+                <h3 className="text-mobile-lg font-bold mb-2">Local Deals</h3>
                 <p className="text-white/80">Find exclusive offers from businesses in your city</p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">💝</div>
-                <h3 className="text-xl font-bold mb-2">Save Money</h3>
+              <div className="mobile-card bg-white/10 backdrop-blur-md border border-white/20 p-6">
+                <div className="text-3xl mb-3">💝</div>
+                <h3 className="text-mobile-lg font-bold mb-2">Save Money</h3>
                 <p className="text-white/80">Get amazing discounts and cashback offers</p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">🤝</div>
-                <h3 className="text-xl font-bold mb-2">Support Local</h3>
+              <div className="mobile-card bg-white/10 backdrop-blur-md border border-white/20 p-6">
+                <div className="text-3xl mb-3">🤝</div>
+                <h3 className="text-mobile-lg font-bold mb-2">Support Local</h3>
                 <p className="text-white/80">Help local businesses grow in your community</p>
               </div>
             </div>
           </div>
 
-          {/* Get Started Button */}
-          <div className="flex-shrink-0 p-6 pb-8">
+          <div className="px-6 pb-6">
             <button
               onClick={handleGetStarted}
-              className="w-full bg-gradient-to-r from-yellow-400 to-pink-500 hover:from-yellow-500 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl transform hover:scale-105 transition-all duration-300 active:scale-95"
+              className="w-full bg-gradient-to-r from-yellow-400 to-pink-500 active:from-yellow-500 active:to-pink-600 text-white font-bold py-5 px-8 rounded-2xl text-mobile-lg shadow-2xl transform active:scale-95 transition-all duration-200 touch-manipulation"
             >
               🚀 Get Started
             </button>
@@ -224,31 +212,28 @@ export default function HomePage() {
     );
   }
 
-  // Main app content for authenticated users
   return (
-    <div className="min-h-screen bg-gray-50 android-app">
+    <div className="mobile-min-height bg-gray-50 android-app">
       <Navbar />
 
-      <main className="pb-20">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+      <main className="pb-24 safe-bottom">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 safe-top">
           <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            <h1 className="text-mobile-2xl font-bold mb-2">
               LocalDeal
             </h1>
-            <p className="text-lg opacity-90 mb-4">
+            <p className="text-mobile-lg opacity-90 mb-6">
               Welcome back, {user.name || 'User'}!
             </p>
             
-            {/* City Selection */}
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-              <label className="block text-sm font-medium mb-2 opacity-90">
+            <div className="mobile-card bg-white/10 backdrop-blur-md border border-white/20 p-4">
+              <label className="block text-sm font-medium mb-3 opacity-90">
                 📍 Your Location
               </label>
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full p-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-base"
               >
                 <option value="" className="text-gray-800">Choose your city...</option>
                 {cities.map((city) => (
@@ -263,47 +248,41 @@ export default function HomePage() {
 
         {selectedCity && (
           <>
-            {/* Search and Filter */}
-            <div className="p-4 bg-white shadow-sm">
+            <div className="mobile-search">
               <div className="space-y-4">
-                <div>
-                  <input
-                    type="text"
-                    placeholder="🔍 Search deals, businesses..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                  >
-                    {categories.map((category) => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <input
+                  type="text"
+                  placeholder="🔍 Search deals, businesses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-field text-base"
+                />
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="select-field text-base"
+                >
+                  {categories.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            {/* Stats Bar */}
-            <div className="bg-white px-4 py-3 border-b border-gray-200">
+            <div className="bg-white px-4 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-mobile-lg font-bold text-gray-900">
                   🏪 Deals in {selectedCity}
                 </h2>
                 <div className="flex items-center space-x-3">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                  <span className="px-3 py-2 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
                     {filteredOffers.length} deals
                   </span>
                   <button
                     onClick={() => fetchOffers()}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                    className="touch-target text-gray-600 active:text-blue-600 active:bg-blue-50 rounded-xl transition-colors duration-150"
                   >
                     🔄
                   </button>
@@ -311,12 +290,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Offers Grid */}
             <div className="p-4">
               {loading ? (
-                <div className="text-center py-16">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading deals...</p>
+                <div className="text-center py-20">
+                  <div className="loading-spinner h-12 w-12 mx-auto mb-6"></div>
+                  <p className="text-gray-600 font-medium text-mobile-lg">Loading deals...</p>
                 </div>
               ) : filteredOffers.length > 0 ? (
                 <div className="space-y-4">
@@ -325,59 +303,58 @@ export default function HomePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 bg-white rounded-xl">
-                  <div className="text-6xl mb-6">
+                <div className="text-center py-20 mobile-card p-8">
+                  <div className="text-5xl mb-6">
                     {searchTerm || selectedCategory !== 'all' ? '🔍' : '🎯'}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  <h3 className="text-mobile-xl font-bold text-gray-900 mb-3">
                     {searchTerm || selectedCategory !== 'all' 
                       ? 'No matching deals found' 
                       : `No deals in ${selectedCity} yet`
                     }
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-gray-600 mb-8">
                     {searchTerm || selectedCategory !== 'all'
                       ? 'Try different search terms'
                       : 'Local businesses will post deals soon!'
                     }
                   </p>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {(searchTerm || selectedCategory !== 'all') && (
                       <button
                         onClick={() => {
                           setSearchTerm('');
                           setSelectedCategory('all');
                         }}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium"
+                        className="btn-primary w-full"
                       >
                         Clear Filters
                       </button>
                     )}
                     <button
                       onClick={() => fetchOffers()}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-xl font-medium"
+                      className="btn-secondary w-full"
                     >
-                      Refresh Deals
+                      🔄 Refresh Deals
                     </button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Quick Actions */}
             <div className="p-4">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
+              <div className="mobile-card bg-gradient-to-r from-blue-50 to-purple-50 p-6">
+                <h3 className="text-mobile-lg font-bold text-gray-900 mb-4">
                   ⚡ Quick Actions
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {user.role === 'owner' && (
                     <button
                       onClick={() => router.push('/owner/dashboard')}
-                      className="w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-left hover:shadow-md transition-shadow"
+                      className="mobile-card-interactive w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-left"
                     >
                       <div className="flex items-center">
-                        <span className="text-2xl mr-3">📊</span>
+                        <span className="text-2xl mr-4">📊</span>
                         <div>
                           <div className="font-bold text-gray-900">Business Dashboard</div>
                           <div className="text-sm text-gray-600">Manage your business and offers</div>
@@ -387,10 +364,10 @@ export default function HomePage() {
                   )}
                   <button
                     onClick={() => fetchOffers()}
-                    className="w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-left hover:shadow-md transition-shadow"
+                    className="mobile-card-interactive w-full bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-left"
                   >
                     <div className="flex items-center">
-                      <span className="text-2xl mr-3">🔄</span>
+                      <span className="text-2xl mr-4">🔄</span>
                       <div>
                         <div className="font-bold text-gray-900">Refresh Deals</div>
                         <div className="text-sm text-gray-600">Get latest offers from businesses</div>
