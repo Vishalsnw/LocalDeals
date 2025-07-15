@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { signInAnonymously as firebaseSignInAnonymously, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User } from '@/types';
 
@@ -17,129 +17,125 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const signInAnonymously = async () => {
+    try {
+      const result = await firebaseSignInAnonymously(auth);
+      console.log('Anonymous sign in successful:', result.user.uid);
+    } catch (error) {
+      console.error('Error signing in:', error);
+      // Create a demo user if Firebase fails
+      const demoUser: User = {
+        userId: 'demo-' + Date.now(),
+        name: 'Demo User',
+        email: '',
+        role: 'user',
+        city: '',
+        createdAt: new Date()
+      };
+      setUser(demoUser);
+      localStorage.setItem('demoUser', JSON.stringify(demoUser));
+    }
+  };
+
+  const updateUserRole = async (role: 'user' | 'owner', city: string, name?: string) => {
+    if (!firebaseUser && !user) return;
+
+    const userId = firebaseUser?.uid || user?.userId || 'demo-' + Date.now();
+    const userData: User = {
+      userId,
+      name: name || 'User',
+      email: firebaseUser?.email || '',
+      role,
+      city,
+      createdAt: user?.createdAt || new Date()
+    };
+
+    try {
+      if (firebaseUser) {
+        await setDoc(doc(db, 'users', userId), userData);
+      }
+      setUser(userData);
+      localStorage.setItem('userData', JSON.stringify(userData));
+      console.log('User profile saved successfully:', userData);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      // Still set local user even if Firestore fails
+      setUser(userData);
+      localStorage.setItem('userData', JSON.stringify(userData));
+    }
+  };
+
   useEffect(() => {
+    // Check for existing user data in localStorage
+    const storedUserData = localStorage.getItem('userData');
+    const storedDemoUser = localStorage.getItem('demoUser');
+    
+    if (storedUserData) {
+      try {
+        const userData = JSON.parse(storedUserData);
+        setUser(userData);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    }
+
+    if (storedDemoUser) {
+      try {
+        const demoUserData = JSON.parse(storedDemoUser);
+        setUser(demoUserData);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Error parsing demo user data:', error);
+      }
+    }
+
+    // Try Firebase auth
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
         try {
-          // Always try Firestore first for the most up-to-date data
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          
           if (userDoc.exists()) {
             const userData = userDoc.data() as User;
             setUser(userData);
-            // Update localStorage with latest data from Firestore
-            localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+            localStorage.setItem('userData', JSON.stringify(userData));
           } else {
-            // No Firestore data found, check localStorage as fallback
-            const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
-            if (savedUser) {
-              try {
-                const userData = JSON.parse(savedUser) as User;
-                // Validate that the saved data is complete
-                if (userData.role && userData.city && userData.userId) {
-                  setUser(userData);
-                  // Restore complete data to Firestore
-                  await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-                } else {
-                  setUser(null);
-                }
-              } catch (parseError) {
-                console.error('Error parsing saved user data:', parseError);
-                // Clear corrupted data
-                localStorage.removeItem(`user_${firebaseUser.uid}`);
-                setUser(null);
-              }
-            } else {
-              // No data found anywhere, user needs to complete profile
-              setUser(null);
-            }
+            // New Firebase user, but no profile yet
+            setUser(null);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
-          // Fallback to localStorage only if Firestore fails
-          const savedUser = localStorage.getItem(`user_${firebaseUser.uid}`);
-          if (savedUser) {
-            try {
-              const userData = JSON.parse(savedUser) as User;
-              if (userData.role && userData.city && userData.userId) {
-                setUser(userData);
-              } else {
-                setUser(null);
-              }
-            } catch (parseError) {
-              console.error('Error parsing fallback user data:', parseError);
-              setUser(null);
-            }
-          } else {
-            setUser(null);
-          }
+          setUser(null);
         }
       } else {
         setUser(null);
       }
       
       setLoading(false);
+    }, (error) => {
+      console.error('Auth state change error:', error);
+      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
-
-  const signInAnonymouslyHandler = async () => {
-    await signInAnonymously(auth);
-  };
-
-  
-
-  const updateUserRole = async (role: 'user' | 'owner', city: string, name?: string) => {
-    if (!firebaseUser) {
-      throw new Error('No authenticated user found');
-    }
-
-    const userData: User = {
-      userId: firebaseUser.uid,
-      name: name || `${role === 'owner' ? 'Business Owner' : 'Customer'} ${firebaseUser.uid.slice(-6)}`,
-      email: `anonymous-${firebaseUser.uid}@local.app`,
-      role,
-      city,
-    };
-
-    try {
-      // Save to Firestore first (primary storage)
-      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-      
-      // Update local state
-      setUser(userData);
-      
-      // Save to localStorage as backup/cache
-      localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
-      
-      console.log('User profile saved successfully:', { role, city, name });
-    } catch (error) {
-      console.error('Error saving to Firestore:', error);
-      
-      // If Firestore fails, still save to localStorage and update state
-      localStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
-      setUser(userData);
-      
-      // Rethrow to let calling component know about the error
-      throw new Error('Failed to save user profile to database, but saved locally');
-    }
-  };
 
   return (
     <AuthContext.Provider value={{
       user,
       firebaseUser,
       loading,
-      signInAnonymously: signInAnonymouslyHandler,
-      updateUserRole,
+      signInAnonymously,
+      updateUserRole
     }}>
       {children}
     </AuthContext.Provider>
