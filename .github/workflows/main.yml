@@ -33,8 +33,11 @@ jobs:
         working-directory: LocalDealRN
         run: npm install
 
-      - name: Grant permission to gradlew
-        run: chmod +x LocalDealRN/android/gradlew
+      - name: Setup React Native
+        working-directory: LocalDealRN
+        run: |
+          npx react-native doctor
+          chmod +x android/gradlew
 
       - name: Build APK (Debug)
         working-directory: LocalDealRN/android
