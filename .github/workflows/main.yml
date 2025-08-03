@@ -39,6 +39,10 @@ jobs:
           npx react-native doctor
           chmod +x android/gradlew
 
+      - name: Grant permission to gradlew
+        working-directory: LocalDealRN/android
+        run: chmod +x gradlew
+
       - name: Build APK (Debug)
         working-directory: LocalDealRN/android
         run: ./gradlew assembleDebug
