@@ -7,7 +7,7 @@ channel = "stable-25_05"
 run = ["sh", "-c", "npm run dev"]
 
 [workflows]
-runButton = "Start Next.js App"
+runButton = "Start React Native App"
 
 [[workflows.workflow]]
 name = "Dev Server"
@@ -30,6 +30,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Start React Native App"
+author = 45909510
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd LocalDealRN && npm install && npm start"
 
 [[ports]]
 localPort = 5000
