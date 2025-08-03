@@ -1,0 +1,8 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LocalDeal</string>
+    <string name="title_activity_main">LocalDeal</string>
+    <string name="package_name">com.localdeal.app</string>
+    <string name="custom_url_scheme">com.localdeal.app</string>
+</resources>

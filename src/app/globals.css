@@ -42,6 +42,25 @@
     position: relative;
     max-width: 100%;
     background: #f8fafc;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Android app specific styles */
+  .capacitor-android {
+    --safe-area-inset-top: 24px;
+    --safe-area-inset-bottom: 24px;
+  }
+
+  /* Prevent zoom on inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 
   .app-container {

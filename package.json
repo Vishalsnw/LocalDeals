@@ -6,7 +6,10 @@
     "dev": "next dev -p 5000",
     "build": "next build",
     "start": "next start -p 5000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:mobile": "next build && npx cap sync",
+    "android:dev": "npx cap run android",
+    "android:build": "npm run build:mobile && npx cap open android"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",

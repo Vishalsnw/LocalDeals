@@ -11,6 +11,18 @@ export const metadata: Metadata = {
   title: 'LocalDeal - Discover Amazing Local Deals',
   description: 'Find the best offers from local businesses in your city. Save money while supporting your community.',
   keywords: 'local deals, discounts, offers, business, shopping, save money',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'LocalDeal',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: 'LocalDeal - Discover Amazing Local Deals',
     description: 'Find the best offers from local businesses in your city.',
